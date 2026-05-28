@@ -26,6 +26,8 @@ const elements = {
   welcomeTitle: document.querySelector("#welcomeTitle"),
   logoutBtn: document.querySelector("#logoutBtn"),
   refreshBtn: document.querySelector("#refreshBtn"),
+  mobileLogoutBtn: document.querySelector("#mobileLogoutBtn"),
+  mobileRefreshBtn: document.querySelector("#mobileRefreshBtn"),
   navItems: document.querySelectorAll(".nav-item"),
   views: document.querySelectorAll(".view"),
   adminOnly: document.querySelectorAll(".admin-only"),
@@ -51,6 +53,13 @@ const elements = {
   statTotal: document.querySelector("#statTotal"),
   exportBtn: document.querySelector("#exportBtn"),
   toast: document.querySelector("#toast"),
+  modal: document.querySelector("#appModal"),
+  modalIcon: document.querySelector("#modalIcon"),
+  modalTitle: document.querySelector("#modalTitle"),
+  modalMessage: document.querySelector("#modalMessage"),
+  modalActions: document.querySelector("#modalActions"),
+  modalCancelBtn: document.querySelector("#modalCancelBtn"),
+  modalConfirmBtn: document.querySelector("#modalConfirmBtn"),
 };
 
 const formatDate = new Intl.DateTimeFormat("th-TH", {
@@ -90,7 +99,8 @@ function prettyTime(value) {
 function getRecords() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (raw) {
-    return JSON.parse(raw);
+    const records = JSON.parse(raw);
+    return migrateRecords(records);
   }
 
   const seed = [
@@ -122,7 +132,43 @@ function getRecords() {
 }
 
 function saveRecords(records) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  const compactRecords = records.map(compactRecord);
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(compactRecords));
+  } catch (error) {
+    if (error?.name !== "QuotaExceededError") {
+      throw error;
+    }
+
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(compactRecords));
+  }
+}
+
+function compactRecord(record) {
+  const hasPhoto = Boolean(record.photo || record.photoName || record.hasPhoto);
+  return {
+    ...record,
+    photo: "",
+    photoName: record.photoName || "",
+    hasPhoto,
+  };
+}
+
+function migrateRecords(records) {
+  let changed = false;
+  const compactRecords = records.map((record) => {
+    if (typeof record.photo === "string" && record.photo.startsWith("data:image")) {
+      changed = true;
+    }
+    return compactRecord(record);
+  });
+
+  if (changed) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(compactRecords));
+  }
+
+  return compactRecords;
 }
 
 function currentStudent() {
@@ -139,6 +185,59 @@ function showToast(message) {
   elements.toast.classList.add("show");
   window.clearTimeout(showToast.timer);
   showToast.timer = window.setTimeout(() => elements.toast.classList.remove("show"), 2800);
+}
+
+function closeModal() {
+  elements.modal.classList.add("hidden");
+  elements.modalConfirmBtn.onclick = null;
+  elements.modalCancelBtn.onclick = null;
+}
+
+function showModal({
+  title,
+  message,
+  icon = "!",
+  confirmText = "ตกลง",
+  cancelText = "ยกเลิก",
+  confirmClass = "primary-btn",
+  showCancel = false,
+}) {
+  return new Promise((resolve) => {
+    elements.modalIcon.textContent = icon;
+    elements.modalTitle.textContent = title;
+    elements.modalMessage.textContent = message;
+    elements.modalConfirmBtn.textContent = confirmText;
+    elements.modalCancelBtn.textContent = cancelText;
+    elements.modalCancelBtn.classList.toggle("hidden", !showCancel);
+    elements.modalActions.classList.toggle("single-action", !showCancel);
+    elements.modalConfirmBtn.className = confirmClass;
+
+    const finish = (value) => {
+      closeModal();
+      resolve(value);
+    };
+
+    elements.modalConfirmBtn.onclick = () => finish(true);
+    elements.modalCancelBtn.onclick = () => finish(false);
+    elements.modal.onclick = (event) => {
+      if (event.target === elements.modal) {
+        finish(false);
+      }
+    };
+
+    elements.modal.classList.remove("hidden");
+    elements.modalConfirmBtn.focus();
+  });
+}
+
+function showAlert(title, message, icon = "!") {
+  return showModal({
+    title,
+    message,
+    icon,
+    confirmText: "ตกลง",
+    showCancel: false,
+  });
 }
 
 function setRole(role) {
@@ -182,7 +281,15 @@ function showView(viewId, options = {}) {
   const nextView = allowedView(viewId) ? viewId : defaultView();
   state.activeView = nextView;
   elements.views.forEach((view) => view.classList.toggle("hidden", view.id !== nextView));
-  elements.navItems.forEach((item) => item.classList.toggle("active", item.dataset.view === nextView));
+  elements.navItems.forEach((item) => {
+    const isActive = item.dataset.view === nextView;
+    item.classList.toggle("active", isActive);
+    if (isActive) {
+      item.setAttribute("aria-current", "page");
+    } else {
+      item.removeAttribute("aria-current");
+    }
+  });
 
   if (shouldPersist) {
     saveSession();
@@ -293,9 +400,9 @@ function renderHistory() {
 
 function recordCardTemplate(record) {
   const statusClass = record.checkOut ? "done" : "active";
-  const image = record.photo
-    ? `<img src="${record.photo}" alt="รูปภาพเช็คอินของ ${record.studentName}" />`
-    : `<img alt="" />`;
+  const image = record.hasPhoto
+    ? `<div class="photo-badge" aria-label="มีรูปภาพเช็คอิน"><span>▣</span><small>มีรูป</small></div>`
+    : `<div class="photo-badge empty" aria-label="ไม่มีรูปภาพเช็คอิน"><span>-</span><small>ไม่มีรูป</small></div>`;
 
   return `
     <article class="record-card">
@@ -369,13 +476,27 @@ async function checkIn() {
   }
 
   if (getTodayRecord()) {
-    showToast("วันนี้เช็คอินแล้ว ไม่สามารถเช็คอินซ้ำได้");
+    await showAlert("เช็คอินแล้ว", "วันนี้คุณเช็คอินไปแล้ว ไม่สามารถเช็คอินซ้ำได้", "i");
     render();
     return;
   }
 
   if (!state.selectedPhoto) {
-    showToast("กรุณาเพิ่มรูปภาพก่อนเช็คอิน");
+    await showAlert("กรุณาเพิ่มรูปภาพ", "ต้องเพิ่มรูปภาพหลักฐานก่อนกดเช็คอิน", "!");
+    elements.photoInput.focus();
+    return;
+  }
+
+  const confirmed = await showModal({
+    title: "ยืนยันการเช็คอิน",
+    message: "ต้องการเช็คอินพร้อมบันทึกตำแหน่ง GPS และรูปภาพตอนนี้ใช่หรือไม่",
+    icon: "✓",
+    confirmText: "ยืนยันเช็คอิน",
+    cancelText: "ยกเลิก",
+    showCancel: true,
+  });
+
+  if (!confirmed) {
     return;
   }
 
@@ -387,7 +508,7 @@ async function checkIn() {
     const records = getRecords();
     if (getTodayRecord(records)) {
       state.isCheckingIn = false;
-      showToast("วันนี้เช็คอินแล้ว ไม่สามารถเช็คอินซ้ำได้");
+      await showAlert("เช็คอินแล้ว", "วันนี้คุณเช็คอินไปแล้ว ไม่สามารถเช็คอินซ้ำได้", "i");
       render();
       return;
     }
@@ -404,16 +525,18 @@ async function checkIn() {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       },
-      photo: state.selectedPhoto,
+      photo: "",
+      photoName: state.selectedPhotoName,
+      hasPhoto: true,
     });
     saveRecords(records);
     state.isCheckingIn = false;
-    showToast("เช็คอินสำเร็จ พร้อมบันทึก GPS และรูปภาพ");
     render();
+    await showAlert("เช็คอินสำเร็จ", "บันทึกเวลา ตำแหน่ง GPS และรูปภาพเรียบร้อยแล้ว", "✓");
   } catch (error) {
     state.isCheckingIn = false;
-    showToast(error.message || "ไม่สามารถอ่านตำแหน่ง GPS ได้");
     render();
+    await showAlert("เช็คอินไม่สำเร็จ", error.message || "ไม่สามารถอ่านตำแหน่ง GPS ได้", "!");
   }
 }
 
@@ -424,11 +547,25 @@ function checkOut() {
     return;
   }
 
-  record.checkOut = new Date().toISOString();
-  record.status = "เสร็จสิ้น";
-  saveRecords(records);
-  showToast("เช็คเอาท์สำเร็จ");
-  render();
+  showModal({
+    title: "ยืนยันการเช็คเอาท์",
+    message: "ต้องการเช็คเอาท์และสิ้นสุดการบันทึกเวลาฝึกงานวันนี้ใช่หรือไม่",
+    icon: "!",
+    confirmText: "ยืนยันเช็คเอาท์",
+    cancelText: "ยกเลิก",
+    confirmClass: "secondary-btn danger-btn",
+    showCancel: true,
+  }).then((confirmed) => {
+    if (!confirmed) {
+      return;
+    }
+
+    record.checkOut = new Date().toISOString();
+    record.status = "เสร็จสิ้น";
+    saveRecords(records);
+    render();
+    showAlert("เช็คเอาท์สำเร็จ", "บันทึกเวลาเช็คเอาท์เรียบร้อยแล้ว", "✓");
+  });
 }
 
 function handlePhoto(event) {
@@ -442,15 +579,13 @@ function handlePhoto(event) {
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    state.selectedPhoto = reader.result;
-    state.selectedPhotoName = file.name;
-    elements.photoPreview.src = reader.result;
-    elements.photoPreview.classList.remove("hidden");
-    elements.photoLabel.textContent = "เลือกรูปภาพแล้ว";
-  };
-  reader.readAsDataURL(file);
+  state.selectedPhoto = file;
+  state.selectedPhotoName = file.name;
+  const previewUrl = URL.createObjectURL(file);
+  elements.photoPreview.src = previewUrl;
+  elements.photoPreview.onload = () => URL.revokeObjectURL(previewUrl);
+  elements.photoPreview.classList.remove("hidden");
+  elements.photoLabel.textContent = "เลือกรูปภาพแล้ว";
 }
 
 function exportCsv() {
@@ -515,6 +650,8 @@ elements.roleOptions.forEach((button) => {
 elements.loginForm.addEventListener("submit", login);
 elements.logoutBtn.addEventListener("click", logout);
 elements.refreshBtn.addEventListener("click", render);
+elements.mobileLogoutBtn.addEventListener("click", logout);
+elements.mobileRefreshBtn.addEventListener("click", render);
 elements.navItems.forEach((item) => item.addEventListener("click", () => showView(item.dataset.view)));
 elements.photoInput.addEventListener("change", handlePhoto);
 elements.checkInBtn.addEventListener("click", checkIn);

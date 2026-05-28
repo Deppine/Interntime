@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=20260528-mobile-dock" />
   </head>
   <body>
     <main class="app-shell">
@@ -86,7 +86,7 @@
         </header>
 
         <div class="dashboard-grid">
-          <aside class="sidebar">
+          <nav class="sidebar desktop-sidebar" aria-label="เมนูหลัก">
             <button class="nav-item active" type="button" data-view="studentView">
               <span aria-hidden="true">⌂</span>
               หน้าหลัก
@@ -99,7 +99,7 @@
               <span aria-hidden="true">▦</span>
               จัดการข้อมูล
             </button>
-          </aside>
+          </nav>
 
           <section class="content-area">
             <div class="view" id="studentView">
@@ -224,10 +224,46 @@
             </div>
           </section>
         </div>
+
+        <nav class="mobile-bottom-dock" aria-label="เมนูมือถือ">
+          <div class="mobile-nav-row">
+            <button class="nav-item active" type="button" data-view="studentView">
+              <span aria-hidden="true">⌂</span>
+              หน้าหลัก
+            </button>
+            <button class="nav-item" type="button" data-view="historyView">
+              <span aria-hidden="true">◷</span>
+              ประวัติ
+            </button>
+            <button class="nav-item admin-only" type="button" data-view="adminView">
+              <span aria-hidden="true">▦</span>
+              จัดการข้อมูล
+            </button>
+          </div>
+          <div class="mobile-action-row">
+            <button class="icon-btn" id="mobileRefreshBtn" type="button" title="รีเฟรชข้อมูล" aria-label="รีเฟรชข้อมูล">
+              ↻
+            </button>
+            <button class="ghost-btn" id="mobileLogoutBtn" type="button">ออกจากระบบ</button>
+          </div>
+        </nav>
       </section>
     </main>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js"></script>
+
+    <div class="modal-overlay hidden" id="appModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <section class="modal-card">
+        <div class="modal-icon" id="modalIcon" aria-hidden="true">!</div>
+        <h3 id="modalTitle">ยืนยัน</h3>
+        <p id="modalMessage">กรุณายืนยันการทำรายการ</p>
+        <div class="modal-actions" id="modalActions">
+          <button class="secondary-btn" id="modalCancelBtn" type="button">ยกเลิก</button>
+          <button class="primary-btn" id="modalConfirmBtn" type="button">ยืนยัน</button>
+        </div>
+      </section>
+    </div>
+
+    <script src="app.js?v=20260528-modal"></script>
   </body>
 </html>

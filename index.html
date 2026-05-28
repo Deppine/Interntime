@@ -4,11 +4,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>InternTime</title>
+  <title>INTERNTIME</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260528-mobile-dock" />
+  <link rel="stylesheet" href="styles.css?v=20260528-admin-account-filter" />
 </head>
 
 <body>
@@ -50,7 +50,7 @@
 
         <div class="role-switch" role="tablist" aria-label="บทบาท">
           <button class="role-option active" type="button" data-role="student">นักศึกษา</button>
-          <button class="role-option" type="button" data-role="admin">อาจารย์/แอดมิน</button>
+          <button class="role-option" type="button" data-role="admin">อาจารย์</button>
         </div>
 
         <label>
@@ -72,8 +72,9 @@
 
     <section class="dashboard hidden" id="dashboard">
       <header class="topbar">
-        <div>
-          <p class="eyebrow">InternTime</p>
+        <button class="icon-btn mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="เปิดเมนู" aria-controls="mobileBottomDock" aria-expanded="false">☰</button>
+        <div class="topbar-title">
+          <p class="eyebrow">INTERNTIME</p>
           <h2 id="welcomeTitle">สวัสดี</h2>
         </div>
         <div class="topbar-actions">
@@ -98,6 +99,10 @@
             <span aria-hidden="true">▦</span>
             จัดการข้อมูล
           </button>
+          <button class="nav-item admin-only" type="button" data-view="accountView">
+            <span aria-hidden="true">＋</span>
+            สร้าง account
+          </button>
         </nav>
 
         <section class="content-area">
@@ -121,13 +126,16 @@
                   <div class="date-chip" id="currentDate">-</div>
                 </div>
 
-                <label class="photo-uploader" for="photoInput">
-                  <input id="photoInput" type="file" accept="image/*" capture="environment" />
-                  <span class="camera-symbol" aria-hidden="true">▣</span>
-                  <strong id="photoLabel">เพิ่มรูปภาพตอนเช็คอิน</strong>
-                  <small>ใช้กล้องมือถือหรือเลือกรูปจากเครื่อง</small>
-                  <img class="photo-preview hidden" id="photoPreview" alt="รูปภาพเช็คอิน" />
-                </label>
+                  <input class="photo-input-hidden" id="cameraInput" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true" />
+                  <input class="photo-input-hidden" id="photoInput" type="file" accept="image/*" tabindex="-1" aria-hidden="true" />
+                  <div class="photo-uploader" id="photoPickerBtn" role="button" tabindex="0" aria-label="เพิ่มรูปภาพตอนเช็คอิน">
+                    <div class="photo-empty" id="photoEmpty">
+                      <span class="camera-symbol" aria-hidden="true">▣</span>
+                      <strong id="photoLabel">เพิ่มรูปภาพตอนเช็คอิน</strong>
+                      <small>ถ่ายภาพใหม่หรือเลือกรูปจากเครื่อง</small>
+                    </div>
+                    <img class="photo-preview hidden" id="photoPreview" alt="รูปภาพเช็คอิน" />
+                  </div>
 
                 <div class="location-box" id="locationBox">
                   <span aria-hidden="true">⌖</span>
@@ -199,10 +207,14 @@
             <section class="panel">
               <div class="panel-title">
                 <div>
-                  <p class="eyebrow">อาจารย์/แอดมิน</p>
+                  <p class="eyebrow">อาจารย์</p>
                   <h3>ตรวจสอบเวลาฝึกงานนักศึกษา</h3>
                 </div>
-                <input class="search-input" id="adminSearch" type="search" placeholder="ค้นหาชื่อนักศึกษา" />
+                <div class="admin-filter-bar">
+                  <input class="search-input" id="adminSearch" type="search" placeholder="ค้นหาชื่อนักศึกษา" />
+                  <input class="date-input" id="adminDateFilter" type="date" aria-label="กรองวันที่" />
+                  <button class="secondary-btn compact-button" id="adminClearDateFilter" type="button">ทั้งหมด</button>
+                </div>
               </div>
               <div class="table-wrap">
                 <table>
@@ -221,12 +233,57 @@
               </div>
             </section>
           </div>
+
+          <div class="view hidden" id="accountView">
+            <section class="panel">
+              <div class="panel-title">
+                <div>
+                  <p class="eyebrow">อาจารย์</p>
+                  <h3>สร้าง account ให้นักศึกษา</h3>
+                </div>
+              </div>
+              <form class="account-form" id="accountForm">
+                <label>
+                  รหัสนักศึกษา
+                  <input id="accountStudentId" type="text" placeholder="เช่น 65010004" required />
+                </label>
+                <label>
+                  ชื่อนักศึกษา
+                  <input id="accountStudentName" type="text" placeholder="ชื่อ - นามสกุล" required />
+                </label>
+                <label>
+                  สาขา
+                  <input id="accountStudentMajor" type="text" placeholder="สาขาวิชา" required />
+                </label>
+                <label>
+                  รหัสผ่าน
+                  <input id="accountStudentPassword" type="text" placeholder="กำหนดรหัสผ่าน" required />
+                </label>
+                <button class="primary-btn" type="submit">สร้าง account</button>
+              </form>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title">
+                <div>
+                  <p class="eyebrow">บัญชีนักศึกษา</p>
+                  <h3>รายการ account ที่ใช้งานได้</h3>
+                </div>
+              </div>
+              <div class="account-list" id="studentAccountList"></div>
+            </section>
+          </div>
         </section>
       </div>
     </section>
   </main>
 
+  <div class="mobile-menu-backdrop hidden" id="mobileMenuBackdrop"></div>
   <nav class="mobile-bottom-dock hidden" id="mobileBottomDock" aria-label="เมนูมือถือ">
+    <div class="mobile-menu-head">
+      <strong>เมนู</strong>
+      <button class="icon-btn" id="mobileMenuClose" type="button" aria-label="ปิดเมนู">×</button>
+    </div>
     <div class="mobile-nav-row">
       <button class="nav-item active" type="button" data-view="studentView">
         <span aria-hidden="true">⌂</span>
@@ -240,12 +297,17 @@
         <span aria-hidden="true">▦</span>
         จัดการข้อมูล
       </button>
+      <button class="nav-item admin-only" type="button" data-view="accountView">
+        <span aria-hidden="true">＋</span>
+        สร้าง account
+      </button>
     </div>
     <div class="mobile-action-row">
-      <button class="icon-btn" id="mobileRefreshBtn" type="button" title="รีเฟรชข้อมูล" aria-label="รีเฟรชข้อมูล">
-        ↻
+      <button class="secondary-btn mobile-menu-command" id="mobileRefreshBtn" type="button">
+        <span aria-hidden="true">↻</span>
+        รีเฟรช
       </button>
-      <button class="ghost-btn" id="mobileLogoutBtn" type="button">ออกจากระบบ</button>
+      <button class="ghost-btn mobile-menu-command" id="mobileLogoutBtn" type="button">ออกจากระบบ</button>
     </div>
   </nav>
 
@@ -263,7 +325,7 @@
     </section>
   </div>
 
-  <script src="app.js?v=20260528-modal"></script>
+  <script src="app.js?v=20260528-admin-account-filter"></script>
 </body>
 
 </html>

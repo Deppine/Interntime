@@ -1,269 +1,269 @@
 <!doctype html>
 <html lang="th">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>InternTime</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css?v=20260528-mobile-dock" />
-  </head>
-  <body>
-    <main class="app-shell">
-      <section class="login-screen" id="loginScreen">
-        <div class="brand-panel">
-          <div class="brand-art" aria-hidden="true">
-            <img src="assets/hero-attendance.png" alt="" />
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InternTime</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=20260528-mobile-dock" />
+</head>
+
+<body>
+  <main class="app-shell">
+    <section class="login-screen" id="loginScreen">
+      <div class="brand-panel">
+        <div class="brand-art" aria-hidden="true">
+          <img src="assets/hero-attendance.png" alt="" />
+        </div>
+        <div class="brand-mark" aria-hidden="true">
+          <span></span>
+          <span></span>
+        </div>
+        <h1>INTERNTIME</h1>
+        <p class="brand-copy">
+          เช็คอินพร้อม GPS และรูปภาพ ดูสถานะรายวัน และติดตามประวัติฝึกงานของนักศึกษาได้จากมือถือหรือคอมพิวเตอร์
+        </p>
+        <div class="brand-metrics" aria-label="ภาพรวมระบบ">
+          <div>
+            <strong>GPS</strong>
+            <span>บันทึกพิกัด</span>
           </div>
-          <div class="brand-mark" aria-hidden="true">
-            <span></span>
-            <span></span>
+          <div>
+            <strong>Photo</strong>
+            <span>แนบหลักฐาน</span>
           </div>
-          <h1>INTERNTIME</h1>
-          <p class="brand-copy">
-            เช็คอินพร้อม GPS และรูปภาพ ดูสถานะรายวัน และติดตามประวัติฝึกงานของนักศึกษาได้จากมือถือหรือคอมพิวเตอร์
-          </p>
-          <div class="brand-metrics" aria-label="ภาพรวมระบบ">
-            <div>
-              <strong>GPS</strong>
-              <span>บันทึกพิกัด</span>
-            </div>
-            <div>
-              <strong>Photo</strong>
-              <span>แนบหลักฐาน</span>
-            </div>
-            <div>
-              <strong>Live</strong>
-              <span>สถานะล่าสุด</span>
-            </div>
+          <div>
+            <strong>Live</strong>
+            <span>สถานะล่าสุด</span>
           </div>
         </div>
+      </div>
 
-        <form class="login-card" id="loginForm">
-          <div>
-            <p class="eyebrow">เข้าสู่ระบบ</p>
-            <h2>เลือกบทบาทผู้ใช้งาน</h2>
-          </div>
+      <form class="login-card" id="loginForm">
+        <div>
+          <p class="eyebrow">เข้าสู่ระบบ</p>
+          <h2>เลือกบทบาทผู้ใช้งาน</h2>
+        </div>
 
-          <div class="role-switch" role="tablist" aria-label="บทบาท">
-            <button class="role-option active" type="button" data-role="student">นักศึกษา</button>
-            <button class="role-option" type="button" data-role="admin">อาจารย์/แอดมิน</button>
-          </div>
+        <div class="role-switch" role="tablist" aria-label="บทบาท">
+          <button class="role-option active" type="button" data-role="student">นักศึกษา</button>
+          <button class="role-option" type="button" data-role="admin">อาจารย์/แอดมิน</button>
+        </div>
 
-          <label>
-            รหัสผู้ใช้
-            <input id="userId" type="text" value="65010001" autocomplete="username" />
-          </label>
-          <label>
-            รหัสผ่าน
-            <input id="password" type="password" value="student123" autocomplete="current-password" />
-          </label>
+        <label>
+          รหัสผู้ใช้
+          <input id="userId" type="text" value="65010001" autocomplete="username" />
+        </label>
+        <label>
+          รหัสผ่าน
+          <input id="password" type="password" value="student123" autocomplete="current-password" />
+        </label>
 
-          <button class="primary-btn" type="submit">
-            <span>เข้าสู่ระบบ</span>
-            <span aria-hidden="true">→</span>
+        <button class="primary-btn" type="submit">
+          <span>เข้าสู่ระบบ</span>
+          <span aria-hidden="true">→</span>
+        </button>
+        <p class="hint">ตัวอย่าง: นักศึกษาใช้รหัสใดก็ได้ / อาจารย์เลือกบทบาทอาจารย์แล้วกดเข้าสู่ระบบ</p>
+      </form>
+    </section>
+
+    <section class="dashboard hidden" id="dashboard">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">InternTime</p>
+          <h2 id="welcomeTitle">สวัสดี</h2>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-btn" id="refreshBtn" type="button" title="รีเฟรชข้อมูล" aria-label="รีเฟรชข้อมูล">
+            ↻
           </button>
-          <p class="hint">ตัวอย่าง: นักศึกษาใช้รหัสใดก็ได้ / อาจารย์เลือกบทบาทอาจารย์แล้วกดเข้าสู่ระบบ</p>
-        </form>
-      </section>
-
-      <section class="dashboard hidden" id="dashboard">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">InternTime</p>
-            <h2 id="welcomeTitle">สวัสดี</h2>
-          </div>
-          <div class="topbar-actions">
-            <button class="icon-btn" id="refreshBtn" type="button" title="รีเฟรชข้อมูล" aria-label="รีเฟรชข้อมูล">
-              ↻
-            </button>
-            <button class="ghost-btn" id="logoutBtn" type="button">ออกจากระบบ</button>
-          </div>
-        </header>
-
-        <div class="dashboard-grid">
-          <nav class="sidebar desktop-sidebar" aria-label="เมนูหลัก">
-            <button class="nav-item active" type="button" data-view="studentView">
-              <span aria-hidden="true">⌂</span>
-              หน้าหลัก
-            </button>
-            <button class="nav-item" type="button" data-view="historyView">
-              <span aria-hidden="true">◷</span>
-              ประวัติ
-            </button>
-            <button class="nav-item admin-only" type="button" data-view="adminView">
-              <span aria-hidden="true">▦</span>
-              จัดการข้อมูล
-            </button>
-          </nav>
-
-          <section class="content-area">
-            <div class="view" id="studentView">
-              <section class="status-hero">
-                <div>
-                  <p class="eyebrow">สถานะวันนี้</p>
-                  <h3 id="todayStatus">ยังไม่ได้เช็คอิน</h3>
-                  <p id="todayMeta">เลือกภาพและกดเช็คอินเพื่อเริ่มบันทึกเวลาฝึกงาน</p>
-                </div>
-                <div class="status-pill" id="statusPill">รอดำเนินการ</div>
-              </section>
-
-              <div class="action-layout">
-                <section class="panel">
-                  <div class="panel-title">
-                    <div>
-                      <p class="eyebrow">บันทึกเวลา</p>
-                      <h3>เช็คอิน / เช็คเอาท์</h3>
-                    </div>
-                    <div class="date-chip" id="currentDate">-</div>
-                  </div>
-
-                  <label class="photo-uploader" for="photoInput">
-                    <input id="photoInput" type="file" accept="image/*" capture="environment" />
-                    <span class="camera-symbol" aria-hidden="true">▣</span>
-                    <strong id="photoLabel">เพิ่มรูปภาพตอนเช็คอิน</strong>
-                    <small>ใช้กล้องมือถือหรือเลือกรูปจากเครื่อง</small>
-                    <img class="photo-preview hidden" id="photoPreview" alt="รูปภาพเช็คอิน" />
-                  </label>
-
-                  <div class="location-box" id="locationBox">
-                    <span aria-hidden="true">⌖</span>
-                    <div>
-                      <strong>ตำแหน่ง GPS</strong>
-                      <p id="locationText">ระบบจะขอสิทธิ์ตำแหน่งเมื่อกดเช็คอิน</p>
-                    </div>
-                  </div>
-
-                  <div class="check-actions">
-                    <button class="primary-btn" id="checkInBtn" type="button">เช็คอินพร้อม GPS</button>
-                    <button class="secondary-btn danger-btn" id="checkOutBtn" type="button" disabled>เช็คเอาท์</button>
-                  </div>
-                </section>
-
-                <section class="panel compact-panel">
-                  <p class="eyebrow">สรุปวันนี้</p>
-                  <div class="summary-list">
-                    <div>
-                      <span>วันที่</span>
-                      <strong id="summaryDate">-</strong>
-                    </div>
-                    <div>
-                      <span>เวลาเช็คอิน</span>
-                      <strong id="summaryIn">-</strong>
-                    </div>
-                    <div>
-                      <span>เวลาเช็คเอาท์</span>
-                      <strong id="summaryOut">-</strong>
-                    </div>
-                    <div>
-                      <span>สถานะ</span>
-                      <strong id="summaryStatus">ยังไม่เริ่ม</strong>
-                    </div>
-                  </div>
-                </section>
-              </div>
-            </div>
-
-            <div class="view hidden" id="historyView">
-              <section class="panel">
-                <div class="panel-title">
-                  <div>
-                    <p class="eyebrow">ประวัติการฝึกงาน</p>
-                    <h3>วันที่ เวลา และสถานะ</h3>
-                  </div>
-                  <button class="secondary-btn" id="exportBtn" type="button">ส่งออก CSV</button>
-                </div>
-                <div class="record-list" id="historyList"></div>
-              </section>
-            </div>
-
-            <div class="view hidden" id="adminView">
-              <section class="admin-stats">
-                <div class="stat-card">
-                  <span>เช็คอินวันนี้</span>
-                  <strong id="statCheckedIn">0</strong>
-                </div>
-                <div class="stat-card">
-                  <span>รอเช็คเอาท์</span>
-                  <strong id="statActive">0</strong>
-                </div>
-                <div class="stat-card">
-                  <span>รายการทั้งหมด</span>
-                  <strong id="statTotal">0</strong>
-                </div>
-              </section>
-
-              <section class="panel">
-                <div class="panel-title">
-                  <div>
-                    <p class="eyebrow">อาจารย์/แอดมิน</p>
-                    <h3>ตรวจสอบเวลาฝึกงานนักศึกษา</h3>
-                  </div>
-                  <input class="search-input" id="adminSearch" type="search" placeholder="ค้นหาชื่อนักศึกษา" />
-                </div>
-                <div class="table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>นักศึกษา</th>
-                        <th>วันที่</th>
-                        <th>เช็คอิน</th>
-                        <th>เช็คเอาท์</th>
-                        <th>สถานะ</th>
-                        <th>GPS</th>
-                      </tr>
-                    </thead>
-                    <tbody id="adminTable"></tbody>
-                  </table>
-                </div>
-              </section>
-            </div>
-          </section>
+          <button class="ghost-btn" id="logoutBtn" type="button">ออกจากระบบ</button>
         </div>
+      </header>
 
-        <nav class="mobile-bottom-dock" aria-label="เมนูมือถือ">
-          <div class="mobile-nav-row">
-            <button class="nav-item active" type="button" data-view="studentView">
-              <span aria-hidden="true">⌂</span>
-              หน้าหลัก
-            </button>
-            <button class="nav-item" type="button" data-view="historyView">
-              <span aria-hidden="true">◷</span>
-              ประวัติ
-            </button>
-            <button class="nav-item admin-only" type="button" data-view="adminView">
-              <span aria-hidden="true">▦</span>
-              จัดการข้อมูล
-            </button>
-          </div>
-          <div class="mobile-action-row">
-            <button class="icon-btn" id="mobileRefreshBtn" type="button" title="รีเฟรชข้อมูล" aria-label="รีเฟรชข้อมูล">
-              ↻
-            </button>
-            <button class="ghost-btn" id="mobileLogoutBtn" type="button">ออกจากระบบ</button>
-          </div>
+      <div class="dashboard-grid">
+        <nav class="sidebar desktop-sidebar" aria-label="เมนูหลัก">
+          <button class="nav-item active" type="button" data-view="studentView">
+            <span aria-hidden="true">⌂</span>
+            หน้าหลัก
+          </button>
+          <button class="nav-item" type="button" data-view="historyView">
+            <span aria-hidden="true">◷</span>
+            ประวัติ
+          </button>
+          <button class="nav-item admin-only" type="button" data-view="adminView">
+            <span aria-hidden="true">▦</span>
+            จัดการข้อมูล
+          </button>
         </nav>
-      </section>
-    </main>
 
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        <section class="content-area">
+          <div class="view" id="studentView">
+            <section class="status-hero">
+              <div>
+                <p class="eyebrow">สถานะวันนี้</p>
+                <h3 id="todayStatus">ยังไม่ได้เช็คอิน</h3>
+                <p id="todayMeta">เลือกภาพและกดเช็คอินเพื่อเริ่มบันทึกเวลาฝึกงาน</p>
+              </div>
+              <div class="status-pill" id="statusPill">รอดำเนินการ</div>
+            </section>
 
-    <div class="modal-overlay hidden" id="appModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <section class="modal-card">
-        <div class="modal-icon" id="modalIcon" aria-hidden="true">!</div>
-        <h3 id="modalTitle">ยืนยัน</h3>
-        <p id="modalMessage">กรุณายืนยันการทำรายการ</p>
-        <div class="modal-actions" id="modalActions">
-          <button class="secondary-btn" id="modalCancelBtn" type="button">ยกเลิก</button>
-          <button class="primary-btn" id="modalConfirmBtn" type="button">ยืนยัน</button>
-        </div>
-      </section>
+            <div class="action-layout">
+              <section class="panel">
+                <div class="panel-title">
+                  <div>
+                    <p class="eyebrow">บันทึกเวลา</p>
+                    <h3>เช็คอิน / เช็คเอาท์</h3>
+                  </div>
+                  <div class="date-chip" id="currentDate">-</div>
+                </div>
+
+                <label class="photo-uploader" for="photoInput">
+                  <input id="photoInput" type="file" accept="image/*" capture="environment" />
+                  <span class="camera-symbol" aria-hidden="true">▣</span>
+                  <strong id="photoLabel">เพิ่มรูปภาพตอนเช็คอิน</strong>
+                  <small>ใช้กล้องมือถือหรือเลือกรูปจากเครื่อง</small>
+                  <img class="photo-preview hidden" id="photoPreview" alt="รูปภาพเช็คอิน" />
+                </label>
+
+                <div class="location-box" id="locationBox">
+                  <span aria-hidden="true">⌖</span>
+                  <div>
+                    <strong>ตำแหน่ง GPS</strong>
+                    <p id="locationText">ระบบจะขอสิทธิ์ตำแหน่งเมื่อกดเช็คอิน</p>
+                  </div>
+                </div>
+
+                <div class="check-actions">
+                  <button class="primary-btn" id="checkInBtn" type="button">เช็คอินพร้อม GPS</button>
+                  <button class="secondary-btn danger-btn" id="checkOutBtn" type="button" disabled>เช็คเอาท์</button>
+                </div>
+              </section>
+
+              <section class="panel compact-panel">
+                <p class="eyebrow">สรุปวันนี้</p>
+                <div class="summary-list">
+                  <div>
+                    <span>วันที่</span>
+                    <strong id="summaryDate">-</strong>
+                  </div>
+                  <div>
+                    <span>เวลาเช็คอิน</span>
+                    <strong id="summaryIn">-</strong>
+                  </div>
+                  <div>
+                    <span>เวลาเช็คเอาท์</span>
+                    <strong id="summaryOut">-</strong>
+                  </div>
+                  <div>
+                    <span>สถานะ</span>
+                    <strong id="summaryStatus">ยังไม่เริ่ม</strong>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div class="view hidden" id="historyView">
+            <section class="panel">
+              <div class="panel-title">
+                <div>
+                  <p class="eyebrow">ประวัติการฝึกงาน</p>
+                  <h3>วันที่ เวลา และสถานะ</h3>
+                </div>
+                <button class="secondary-btn" id="exportBtn" type="button">ส่งออก CSV</button>
+              </div>
+              <div class="record-list" id="historyList"></div>
+            </section>
+          </div>
+
+          <div class="view hidden" id="adminView">
+            <section class="admin-stats">
+              <div class="stat-card">
+                <span>เช็คอินวันนี้</span>
+                <strong id="statCheckedIn">0</strong>
+              </div>
+              <div class="stat-card">
+                <span>รอเช็คเอาท์</span>
+                <strong id="statActive">0</strong>
+              </div>
+              <div class="stat-card">
+                <span>รายการทั้งหมด</span>
+                <strong id="statTotal">0</strong>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title">
+                <div>
+                  <p class="eyebrow">อาจารย์/แอดมิน</p>
+                  <h3>ตรวจสอบเวลาฝึกงานนักศึกษา</h3>
+                </div>
+                <input class="search-input" id="adminSearch" type="search" placeholder="ค้นหาชื่อนักศึกษา" />
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>นักศึกษา</th>
+                      <th>วันที่</th>
+                      <th>เช็คอิน</th>
+                      <th>เช็คเอาท์</th>
+                      <th>สถานะ</th>
+                      <th>GPS</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminTable"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <nav class="mobile-bottom-dock hidden" id="mobileBottomDock" aria-label="เมนูมือถือ">
+    <div class="mobile-nav-row">
+      <button class="nav-item active" type="button" data-view="studentView">
+        <span aria-hidden="true">⌂</span>
+        หน้าหลัก
+      </button>
+      <button class="nav-item" type="button" data-view="historyView">
+        <span aria-hidden="true">◷</span>
+        ประวัติ
+      </button>
+      <button class="nav-item admin-only" type="button" data-view="adminView">
+        <span aria-hidden="true">▦</span>
+        จัดการข้อมูล
+      </button>
     </div>
+    <div class="mobile-action-row">
+      <button class="icon-btn" id="mobileRefreshBtn" type="button" title="รีเฟรชข้อมูล" aria-label="รีเฟรชข้อมูล">
+        ↻
+      </button>
+      <button class="ghost-btn" id="mobileLogoutBtn" type="button">ออกจากระบบ</button>
+    </div>
+  </nav>
 
-    <script src="app.js?v=20260528-modal"></script>
-  </body>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="modal-overlay hidden" id="appModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <section class="modal-card">
+      <div class="modal-icon" id="modalIcon" aria-hidden="true">!</div>
+      <h3 id="modalTitle">ยืนยัน</h3>
+      <p id="modalMessage">กรุณายืนยันการทำรายการ</p>
+      <div class="modal-actions" id="modalActions">
+        <button class="secondary-btn" id="modalCancelBtn" type="button">ยกเลิก</button>
+        <button class="primary-btn" id="modalConfirmBtn" type="button">ยืนยัน</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js?v=20260528-modal"></script>
+</body>
+
 </html>

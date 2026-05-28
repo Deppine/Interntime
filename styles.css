@@ -700,6 +700,7 @@ td {
   opacity: 0;
   pointer-events: none;
   transition: 0.2s ease;
+  z-index: 10000;
 }
 
 .toast.show {
@@ -710,7 +711,7 @@ td {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 10001;
   display: grid;
   place-items: center;
   padding: 20px;
@@ -888,7 +889,8 @@ td {
   }
 
   .dashboard {
-    padding: 12px 12px 180px 12px;
+    /* ปรับขอบล่างให้กว้างขึ้น เพื่อไม่ให้เนื้อหาสุดท้ายโดนเมนูด้านล่างบัง */
+    padding: 12px 12px calc(150px + env(safe-area-inset-bottom)) 12px;
   }
 
   .dashboard-grid {
@@ -939,19 +941,20 @@ td {
     display: none;
   }
 
-    .mobile-bottom-dock {
-      position: fixed !important;/* บังคับล็อคตำแหน่งให้อยู่กับที่ */
-      top: auto;
-      right: 12px;
-      bottom: 12px !important;/* เปลี่ยนมาใช้ค่าตายตัว ป้องกันเบราว์เซอร์คำนวณพลาด */
-      left: 12px;
-      z-index: 9999;/* บังคับให้อยู่เลเยอร์บนสุดเสมอ */
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin: 0;/* ลบคำสั่ง contain เดิมทิ้งไป เพราะมักทำให้ position: fixed พังในบางเบราว์เซอร์ */
-      pointer-events: none;
-    }
+  /* 📍 อัปเดต CSS ล็อกเมนูให้ทำงานสมบูรณ์ รองรับหน้าจอทุกแบบ 📍 */
+  .mobile-bottom-dock {
+    position: fixed;
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    /* รองรับหน้าจอ iPhone ใหม่ๆ */
+    left: 12px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    pointer-events: none;
+  }
 
   .mobile-nav-row,
   .mobile-action-row {
@@ -1240,7 +1243,8 @@ td {
 
   .toast {
     right: 12px;
-    bottom: 92px;
+    /* ปรับระยะให้แจ้งเตือนลอยอยู่เหนือเมนูมือถือพอดี */
+    bottom: calc(150px + env(safe-area-inset-bottom));
   }
 
   .modal-overlay {

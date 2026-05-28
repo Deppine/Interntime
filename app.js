@@ -28,6 +28,7 @@ const elements = {
   refreshBtn: document.querySelector("#refreshBtn"),
   mobileLogoutBtn: document.querySelector("#mobileLogoutBtn"),
   mobileRefreshBtn: document.querySelector("#mobileRefreshBtn"),
+  mobileBottomDock: document.querySelector("#mobileBottomDock"), /* 📍 เพิ่มตัวแปรเมนูมือถือ 📍 */
   navItems: document.querySelectorAll(".nav-item"),
   views: document.querySelectorAll(".view"),
   adminOnly: document.querySelectorAll(".admin-only"),
@@ -299,6 +300,12 @@ function showView(viewId, options = {}) {
 function showDashboard(viewId = defaultView()) {
   elements.loginScreen.classList.add("hidden");
   elements.dashboard.classList.remove("hidden");
+
+  /* 📍 สั่งแสดงเมนูมือถือเมื่อเข้าหน้า Dashboard 📍 */
+  if (elements.mobileBottomDock) {
+    elements.mobileBottomDock.classList.remove("hidden");
+  }
+
   elements.welcomeTitle.textContent =
     state.role === "admin" ? "ภาพรวมเวลาฝึกงาน" : `สวัสดี ${state.user.name}`;
 
@@ -330,6 +337,12 @@ function logout() {
   elements.photoPreview.classList.add("hidden");
   elements.photoLabel.textContent = "เพิ่มรูปภาพตอนเช็คอิน";
   elements.dashboard.classList.add("hidden");
+
+  /* 📍 สั่งซ่อนเมนูมือถือเมื่อออกจากระบบ 📍 */
+  if (elements.mobileBottomDock) {
+    elements.mobileBottomDock.classList.add("hidden");
+  }
+
   elements.loginScreen.classList.remove("hidden");
   setRole("student");
 }

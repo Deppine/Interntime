@@ -8,7 +8,7 @@
   --teal-dark: #05665f;
   --lime: #d7f06a;
   --amber: #ffb84d;
-  --red: #ff6b63;
+  --red: #ff2020;
   --blue: #4267d6;
   --shadow: 0 22px 70px rgba(32, 50, 47, 0.14);
 }
@@ -26,7 +26,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -249,8 +250,11 @@ label {
   font-size: 14px;
 }
 
-input {
+input,
+select {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 52px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -260,9 +264,32 @@ input {
   outline: 0;
 }
 
-input:focus {
+select {
+  appearance: auto;
+  text-overflow: ellipsis;
+}
+
+input:focus,
+select:focus {
   border-color: var(--teal);
   box-shadow: 0 0 0 4px rgba(8, 127, 118, 0.12);
+}
+
+input.field-invalid,
+select.field-invalid,
+.photo-uploader.field-invalid,
+.profile-photo-picker.field-invalid {
+  border-color: var(--red);
+  box-shadow: 0 0 0 4px rgba(255, 32, 32, 0.1);
+}
+
+.field-error {
+  display: block;
+  margin-top: 2px;
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
 }
 
 .primary-btn,
@@ -310,11 +337,11 @@ input:focus {
 .danger-btn {
   color: #fff;
   background: var(--red);
-  box-shadow: 0 14px 34px rgba(255, 107, 99, 0.26);
+  box-shadow: 0 14px 34px rgba(255, 32, 32, 0.3);
 }
 
 .danger-btn:hover:not(:disabled) {
-  background: #f2504a;
+  background: #e60000;
 }
 
 .danger-btn:disabled {
@@ -360,6 +387,43 @@ input:focus {
 .topbar-actions {
   display: flex;
   gap: 10px;
+}
+
+.topbar-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.profile-avatar {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--teal);
+  font-weight: 700;
+}
+
+.profile-avatar.small {
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+}
+
+.profile-avatar.large {
+  width: 96px;
+  height: 96px;
+  font-size: 34px;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .mobile-menu-toggle,
@@ -417,6 +481,16 @@ input:focus {
   background: #ecf1ef;
 }
 
+.nav-item .line-icon svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .nav-item.active {
   color: var(--ink);
   background: #fff;
@@ -466,6 +540,11 @@ input:focus {
 .record-status.done {
   color: #34488f;
   background: #e5ebff;
+}
+
+.record-status.waiting {
+  color: #805304;
+  background: #fff2d6;
 }
 
 .action-layout {
@@ -571,6 +650,26 @@ input:focus {
   background: #f0f4ff;
 }
 
+.intern-rule-box {
+  margin: -4px 0 16px;
+  padding: 14px 16px;
+  border: 1px solid #cfe8df;
+  border-radius: 8px;
+  background: #f2fbf7;
+}
+
+.intern-rule-box strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.intern-rule-box p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
 .location-box>span {
   display: grid;
   place-items: center;
@@ -601,6 +700,17 @@ input:focus {
 .record-list {
   display: grid;
   gap: 12px;
+}
+
+.history-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.history-more-btn {
+  justify-self: center;
+  min-width: 180px;
 }
 
 .record-card {
@@ -668,6 +778,99 @@ input:focus {
   margin-bottom: 18px;
 }
 
+.admin-dashboard-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.admin-dashboard-head h3 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.25;
+}
+
+.admin-dashboard-head p:last-child {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.admin-dashboard-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+}
+
+.dashboard-stats {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.admin-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, .85fr);
+  gap: 18px;
+}
+
+.single-line-heading {
+  white-space: nowrap;
+  font-size: 22px !important;
+  line-height: 1.2 !important;
+}
+
+.compact-record-list .record-card {
+  grid-template-columns: 56px 1fr auto;
+}
+
+.compact-record-list .photo-badge {
+  width: 56px;
+  height: 56px;
+}
+
+.missing-list {
+  display: grid;
+  gap: 10px;
+}
+
+.missing-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.missing-item strong,
+.missing-item span {
+  display: block;
+}
+
+.missing-item span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.missing-item em {
+  flex: 0 0 auto;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: #9a5a00;
+  background: #fff3d8;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+}
+
 .stat-card {
   padding: 20px;
   border-radius: 8px;
@@ -688,10 +891,46 @@ input:focus {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
 }
 
-.date-input {
+.date-input,
+.status-filter {
   max-width: 180px;
+}
+
+.status-filter {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  width: min(520px, 100%);
+  max-width: 520px;
+  min-width: 0;
+  min-height: 52px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.status-filter button {
+  min-width: 0;
+  min-height: 42px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0 8px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.status-filter button.active {
+  color: #fff;
+  background: var(--teal);
 }
 
 .compact-button {
@@ -702,6 +941,27 @@ input:focus {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+}
+
+.account-form .wide-field {
+  grid-column: 1 / -1;
+}
+
+.account-form-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.account-form.is-editing .account-form-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.account-form-actions .primary-btn,
+.account-form-actions .secondary-btn {
+  width: 100%;
+  min-height: 52px;
 }
 
 .account-form label {
@@ -716,9 +976,76 @@ input:focus {
   align-self: end;
 }
 
+.account-form input[readonly] {
+  cursor: not-allowed;
+  color: var(--muted);
+  background: #eef1f0;
+}
+
 .account-list {
   display: grid;
   gap: 10px;
+}
+
+.student-profile-form {
+  display: grid;
+  gap: 18px;
+}
+
+.profile-photo-block,
+.password-change-box {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.profile-photo-picker {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 128px;
+  border: 1.5px dashed #aac6bf;
+  border-radius: 8px;
+  padding: 14px;
+  color: var(--ink);
+  background: #f7fbf9;
+  text-align: left;
+}
+
+.profile-photo-picker:hover,
+.profile-photo-picker:focus-visible {
+  border-color: var(--teal);
+  background: #f0faf6;
+}
+
+.profile-photo-picker strong,
+.profile-photo-picker small {
+  display: block;
+}
+
+.profile-photo-picker small {
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.profile-readonly-grid,
+.profile-password-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.profile-readonly-grid .wide-field,
+.profile-password-grid label:last-child {
+  grid-column: 1 / -1;
+}
+
+.student-profile-form input[readonly] {
+  cursor: not-allowed;
+  color: var(--muted);
+  background: #eef1f0;
 }
 
 .account-card {
@@ -765,6 +1092,7 @@ input:focus {
   font-weight: 600;
 }
 
+.account-edit-btn,
 .account-delete-btn {
   min-height: 38px;
   padding: 0 12px;
@@ -1064,6 +1392,10 @@ td {
     min-width: 0;
   }
 
+  .topbar-profile {
+    min-width: 0;
+  }
+
   .topbar-title h2 {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1273,6 +1605,11 @@ td {
     padding: 12px;
   }
 
+  .intern-rule-box {
+    margin: 0 0 12px;
+    padding: 12px;
+  }
+
   .location-box>span {
     flex-basis: 38px;
     width: 38px;
@@ -1311,8 +1648,40 @@ td {
   }
 
   .admin-stats {
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
     margin-bottom: 12px;
+  }
+
+  .admin-dashboard-head {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 12px;
+    padding: 16px;
+    box-shadow: 0 12px 34px rgba(32, 50, 47, 0.1);
+  }
+
+  .admin-dashboard-head h3 {
+    font-size: 22px;
+  }
+
+  .single-line-heading {
+    font-size: 20px !important;
+  }
+
+  .admin-dashboard-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .dashboard-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .stat-card {
@@ -1355,18 +1724,49 @@ td {
   }
 
   .admin-filter-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     width: 100%;
+    max-width: 100%;
     justify-content: stretch;
+    overflow: hidden;
   }
 
   .admin-filter-bar .search-input,
   .admin-filter-bar .date-input,
+  .admin-filter-bar .status-filter,
   .admin-filter-bar .compact-button {
     width: 100%;
     max-width: none;
+    min-width: 0;
+  }
+
+  .admin-filter-bar .status-filter {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 100%;
+  }
+
+  .status-filter button {
+    font-size: 12px;
+    padding: 0 6px;
   }
 
   .account-form {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-readonly-grid,
+  .profile-password-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-photo-picker {
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .account-form-actions {
     grid-template-columns: 1fr;
   }
 
@@ -1386,6 +1786,7 @@ td {
   }
 
   .account-fixed,
+  .account-edit-btn,
   .account-delete-btn {
     width: 100%;
     text-align: center;
@@ -1486,6 +1887,11 @@ td {
 }
 
 @media (max-width: 360px) {
+  .dashboard-stats,
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
   .nav-item {
     font-size: 11px;
   }

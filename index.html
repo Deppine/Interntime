@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260528-admin-account-filter" />
+  <link rel="stylesheet" href="styles.css?v=20260529-profile-outline-icon" />
 </head>
 
 <body>
@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <form class="login-card" id="loginForm">
+      <form class="login-card" id="loginForm" novalidate>
         <div>
           <p class="eyebrow">เข้าสู่ระบบ</p>
           <h2>เลือกบทบาทผู้ใช้งาน</h2>
@@ -50,7 +50,7 @@
 
         <div class="role-switch" role="tablist" aria-label="บทบาท">
           <button class="role-option active" type="button" data-role="student">นักศึกษา</button>
-          <button class="role-option" type="button" data-role="admin">อาจารย์</button>
+          <button class="role-option" type="button" data-role="admin">Admin</button>
         </div>
 
         <label>
@@ -66,30 +66,46 @@
           <span>เข้าสู่ระบบ</span>
           <span aria-hidden="true">→</span>
         </button>
-        <p class="hint">ตัวอย่าง: นักศึกษาใช้รหัสใดก็ได้ / อาจารย์เลือกบทบาทอาจารย์แล้วกดเข้าสู่ระบบ</p>
+        <p class="hint">ตัวอย่าง: นักศึกษาใช้รหัสใดก็ได้ / Admin เลือกบทบาท Admin แล้วกดเข้าสู่ระบบ</p>
       </form>
     </section>
 
     <section class="dashboard hidden" id="dashboard">
       <header class="topbar">
         <button class="icon-btn mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="เปิดเมนู" aria-controls="mobileBottomDock" aria-expanded="false">☰</button>
-        <div class="topbar-title">
-          <p class="eyebrow">INTERNTIME</p>
-          <h2 id="welcomeTitle">สวัสดี</h2>
+        <div class="topbar-profile">
+          <div class="profile-avatar small" id="topbarAvatar" aria-hidden="true">
+            <span id="topbarAvatarInitial">I</span>
+            <img class="hidden" id="topbarAvatarImg" alt="" />
+          </div>
+          <div class="topbar-title">
+            <p class="eyebrow">INTERNTIME</p>
+            <h2 id="welcomeTitle">สวัสดี</h2>
+          </div>
         </div>
         <div class="topbar-actions">
-          <button class="icon-btn" id="refreshBtn" type="button" title="รีเฟรชข้อมูล" aria-label="รีเฟรชข้อมูล">
-            ↻
-          </button>
           <button class="ghost-btn" id="logoutBtn" type="button">ออกจากระบบ</button>
         </div>
       </header>
 
       <div class="dashboard-grid">
         <nav class="sidebar desktop-sidebar" aria-label="เมนูหลัก">
-          <button class="nav-item active" type="button" data-view="studentView">
+          <button class="nav-item student-only active" type="button" data-view="studentView">
             <span aria-hidden="true">⌂</span>
             หน้าหลัก
+          </button>
+          <button class="nav-item student-only" type="button" data-view="studentProfileView">
+            <span aria-hidden="true" class="line-icon">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M20 21a8 8 0 0 0-16 0" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </span>
+            โปรไฟล์
+          </button>
+          <button class="nav-item admin-only" type="button" data-view="adminDashboardView">
+            <span aria-hidden="true">▤</span>
+            Dashboard
           </button>
           <button class="nav-item" type="button" data-view="historyView">
             <span aria-hidden="true">◷</span>
@@ -144,6 +160,10 @@
                     <p id="locationText">ระบบจะขอสิทธิ์ตำแหน่งเมื่อกดเช็คอิน</p>
                   </div>
                 </div>
+                <div class="intern-rule-box" id="internRuleBox">
+                  <strong id="internRuleTitle">สถานที่ฝึกงาน</strong>
+                  <p id="internRuleText">Admin ยังไม่ได้ตั้งค่าสถานที่และเวลาฝึกงาน</p>
+                </div>
 
                 <div class="check-actions">
                   <button class="primary-btn" id="checkInBtn" type="button">เช็คอินพร้อม GPS</button>
@@ -188,6 +208,123 @@
             </section>
           </div>
 
+          <div class="view hidden" id="studentProfileView">
+            <section class="panel profile-panel">
+              <div class="panel-title">
+                <div>
+                  <p class="eyebrow">Account นักศึกษา</p>
+                  <h3>โปรไฟล์ของฉัน</h3>
+                </div>
+              </div>
+
+              <form class="student-profile-form" id="studentProfileForm" novalidate>
+                <div class="profile-photo-block">
+                  <input class="photo-input-hidden" id="profilePhotoInput" type="file" accept="image/*" tabindex="-1" aria-hidden="true" />
+                  <button class="profile-photo-picker" id="profilePhotoBtn" type="button">
+                    <span class="profile-avatar large" id="profileAvatarPreview">
+                      <span id="profileAvatarInitial">N</span>
+                      <img class="hidden" id="profileAvatarImg" alt="รูปโปรไฟล์" />
+                    </span>
+                    <span>
+                      <strong>เปลี่ยนรูปโปรไฟล์</strong>
+                      <small id="profilePhotoName">เลือกรูปภาพจากเครื่อง</small>
+                    </span>
+                  </button>
+                </div>
+
+                <div class="profile-readonly-grid">
+                  <label>
+                    รหัสนักศึกษา
+                    <input id="profileStudentId" type="text" readonly />
+                  </label>
+                  <label>
+                    ชื่อนักศึกษา
+                    <input id="profileStudentName" type="text" readonly />
+                  </label>
+                  <label class="wide-field">
+                    สาขา
+                    <input id="profileStudentMajor" type="text" readonly />
+                  </label>
+                </div>
+
+                <div class="password-change-box">
+                  <p class="eyebrow">เปลี่ยนรหัสผ่าน</p>
+                  <div class="profile-password-grid">
+                    <label>
+                      รหัสผ่านเดิม
+                      <input id="profileCurrentPassword" type="password" autocomplete="current-password" />
+                    </label>
+                    <label>
+                      รหัสผ่านใหม่
+                      <input id="profileNewPassword" type="password" autocomplete="new-password" />
+                    </label>
+                    <label>
+                      ยืนยันรหัสผ่านใหม่
+                      <input id="profileConfirmPassword" type="password" autocomplete="new-password" />
+                    </label>
+                  </div>
+                </div>
+
+                <button class="primary-btn" type="submit">บันทึกโปรไฟล์</button>
+              </form>
+            </section>
+          </div>
+
+          <div class="view hidden" id="adminDashboardView">
+            <section class="admin-dashboard-head">
+              <div>
+                <p class="eyebrow">Dashboard Admin</p>
+                <h3>ภาพรวมประจำวันที่ <span id="adminDashboardDate">-</span></h3>
+                <p>ติดตามการเช็คอิน เช็คเอาท์ และสถานะนักศึกษาฝึกงานของวันนี้</p>
+              </div>
+            </section>
+
+            <section class="admin-stats dashboard-stats">
+              <div class="stat-card">
+                <span>นักศึกษาทั้งหมด</span>
+                <strong id="adminDashStudents">0</strong>
+              </div>
+              <div class="stat-card">
+                <span>เช็คอินแล้ว</span>
+                <strong id="adminDashCheckedIn">0</strong>
+              </div>
+              <div class="stat-card">
+                <span>กำลังฝึกงาน</span>
+                <strong id="adminDashActive">0</strong>
+              </div>
+              <div class="stat-card">
+                <span>เช็คเอาท์แล้ว</span>
+                <strong id="adminDashDone">0</strong>
+              </div>
+              <div class="stat-card">
+                <span>ยังไม่เช็คอิน</span>
+                <strong id="adminDashMissing">0</strong>
+              </div>
+            </section>
+
+            <div class="admin-dashboard-grid">
+              <section class="panel">
+                <div class="panel-title">
+                  <div>
+                    <p class="eyebrow">ล่าสุดวันนี้</p>
+                    <h3>รายการเช็คอินล่าสุด</h3>
+                  </div>
+                </div>
+                <div class="record-list compact-record-list" id="adminDashLatestList"></div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-title">
+                  <div>
+                    <p class="eyebrow">ติดตาม</p>
+                    <h3 class="single-line-heading">นักศึกษาที่ยังไม่เช็คอิน</h3>
+                  </div>
+                </div>
+                <div class="missing-list" id="adminDashMissingList"></div>
+              </section>
+            </div>
+          </div>
+
           <div class="view hidden" id="adminView">
             <section class="admin-stats">
               <div class="stat-card">
@@ -207,12 +344,18 @@
             <section class="panel">
               <div class="panel-title">
                 <div>
-                  <p class="eyebrow">อาจารย์</p>
+                  <p class="eyebrow">Admin</p>
                   <h3>ตรวจสอบเวลาฝึกงานนักศึกษา</h3>
                 </div>
                 <div class="admin-filter-bar">
                   <input class="search-input" id="adminSearch" type="search" placeholder="ค้นหาชื่อนักศึกษา" />
                   <input class="date-input" id="adminDateFilter" type="date" aria-label="กรองวันที่" />
+                  <div class="status-filter" id="adminStatusFilter" role="group" aria-label="กรองสถานะ" data-status="all">
+                    <button class="active" type="button" data-status="all">สถานะทั้งหมด</button>
+                    <button type="button" data-status="active">กำลังฝึกงาน</button>
+                    <button type="button" data-status="done">เสร็จสิ้น</button>
+                    <button type="button" data-status="missing">รอเช็คอิน</button>
+                  </div>
                   <button class="secondary-btn compact-button" id="adminClearDateFilter" type="button">ทั้งหมด</button>
                 </div>
               </div>
@@ -238,11 +381,11 @@
             <section class="panel">
               <div class="panel-title">
                 <div>
-                  <p class="eyebrow">อาจารย์</p>
-                  <h3>สร้าง account ให้นักศึกษา</h3>
+                  <p class="eyebrow">Admin</p>
+                  <h3 id="accountFormTitle">สร้าง Account ให้นักศึกษา</h3>
                 </div>
               </div>
-              <form class="account-form" id="accountForm">
+              <form class="account-form" id="accountForm" novalidate>
                 <label>
                   รหัสนักศึกษา
                   <input id="accountStudentId" type="text" placeholder="เช่น 65010004" required />
@@ -259,7 +402,30 @@
                   รหัสผ่าน
                   <input id="accountStudentPassword" type="text" placeholder="กำหนดรหัสผ่าน" required />
                 </label>
-                <button class="primary-btn" type="submit">สร้าง account</button>
+                <label>
+                  สถานที่ฝึกงาน
+                  <input id="accountWorkplace" type="text" placeholder="ชื่อบริษัท / หน่วยงาน" required />
+                </label>
+                <label>
+                  เวลาเข้างาน
+                  <input id="accountStartTime" type="time" required />
+                </label>
+                <label>
+                  เวลาเลิกงาน
+                  <input id="accountEndTime" type="time" required />
+                </label>
+                <label class="wide-field">
+                  Google Maps Link หรือพิกัด
+                  <input id="accountMapsLink" type="text" placeholder="วางลิงก์ Google Maps หรือ 13.7563,100.5018" required />
+                </label>
+                <label>
+                  รัศมีที่ยอมรับ (เมตร)
+                  <input id="accountRadius" type="number" min="50" step="10" value="200" required />
+                </label>
+                <div class="account-form-actions">
+                  <button class="primary-btn" id="accountSubmitBtn" type="submit">สร้าง account</button>
+                  <button class="secondary-btn hidden" id="accountCancelEditBtn" type="button">ยกเลิกแก้ไข</button>
+                </div>
               </form>
             </section>
 
@@ -285,9 +451,22 @@
       <button class="icon-btn" id="mobileMenuClose" type="button" aria-label="ปิดเมนู">×</button>
     </div>
     <div class="mobile-nav-row">
-      <button class="nav-item active" type="button" data-view="studentView">
+      <button class="nav-item student-only active" type="button" data-view="studentView">
         <span aria-hidden="true">⌂</span>
         หน้าหลัก
+      </button>
+      <button class="nav-item student-only" type="button" data-view="studentProfileView">
+        <span aria-hidden="true" class="line-icon">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M20 21a8 8 0 0 0-16 0" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </span>
+        โปรไฟล์
+      </button>
+      <button class="nav-item admin-only" type="button" data-view="adminDashboardView">
+        <span aria-hidden="true">▤</span>
+        Dashboard
       </button>
       <button class="nav-item" type="button" data-view="historyView">
         <span aria-hidden="true">◷</span>
@@ -303,10 +482,6 @@
       </button>
     </div>
     <div class="mobile-action-row">
-      <button class="secondary-btn mobile-menu-command" id="mobileRefreshBtn" type="button">
-        <span aria-hidden="true">↻</span>
-        รีเฟรช
-      </button>
       <button class="ghost-btn mobile-menu-command" id="mobileLogoutBtn" type="button">ออกจากระบบ</button>
     </div>
   </nav>
@@ -325,7 +500,7 @@
     </section>
   </div>
 
-  <script src="app.js?v=20260528-admin-account-filter"></script>
+  <script src="app.js?v=20260529-profile-outline-icon"></script>
 </body>
 
 </html>

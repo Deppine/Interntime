@@ -9,10 +9,15 @@ const state = {
   isCheckingIn: false,
   selectedPhoto: null,
   selectedPhotoName: "",
+  selectedProfilePhoto: "",
+  selectedProfilePhotoName: "",
   currentDateKey: null,
+  historyVisibleCount: 5,
+  editingStudentId: null,
 };
 
 const DAY_ROLLOVER_CHECK_MS = 60 * 1000;
+const HISTORY_PAGE_SIZE = 5;
 
 const demoStudents = [
   { id: "65010001", name: "ภัทรพล ใจดี", major: "เทคโนโลยีสารสนเทศ" },
@@ -28,6 +33,8 @@ const elements = {
   userId: document.querySelector("#userId"),
   password: document.querySelector("#password"),
   welcomeTitle: document.querySelector("#welcomeTitle"),
+  topbarAvatarInitial: document.querySelector("#topbarAvatarInitial"),
+  topbarAvatarImg: document.querySelector("#topbarAvatarImg"),
   logoutBtn: document.querySelector("#logoutBtn"),
   refreshBtn: document.querySelector("#refreshBtn"),
   mobileMenuToggle: document.querySelector("#mobileMenuToggle"),
@@ -39,6 +46,7 @@ const elements = {
   navItems: document.querySelectorAll(".nav-item"),
   views: document.querySelectorAll(".view"),
   adminOnly: document.querySelectorAll(".admin-only"),
+  studentOnly: document.querySelectorAll(".student-only"),
   currentDate: document.querySelector("#currentDate"),
   todayStatus: document.querySelector("#todayStatus"),
   todayMeta: document.querySelector("#todayMeta"),
@@ -50,6 +58,8 @@ const elements = {
   photoPreview: document.querySelector("#photoPreview"),
   photoLabel: document.querySelector("#photoLabel"),
   locationText: document.querySelector("#locationText"),
+  internRuleTitle: document.querySelector("#internRuleTitle"),
+  internRuleText: document.querySelector("#internRuleText"),
   checkInBtn: document.querySelector("#checkInBtn"),
   checkOutBtn: document.querySelector("#checkOutBtn"),
   summaryDate: document.querySelector("#summaryDate"),
@@ -60,16 +70,45 @@ const elements = {
   adminTable: document.querySelector("#adminTable"),
   adminSearch: document.querySelector("#adminSearch"),
   adminDateFilter: document.querySelector("#adminDateFilter"),
+  adminStatusFilter: document.querySelector("#adminStatusFilter"),
   adminClearDateFilter: document.querySelector("#adminClearDateFilter"),
   statCheckedIn: document.querySelector("#statCheckedIn"),
   statActive: document.querySelector("#statActive"),
   statTotal: document.querySelector("#statTotal"),
+  adminDashboardDate: document.querySelector("#adminDashboardDate"),
+  adminDashStudents: document.querySelector("#adminDashStudents"),
+  adminDashCheckedIn: document.querySelector("#adminDashCheckedIn"),
+  adminDashActive: document.querySelector("#adminDashActive"),
+  adminDashDone: document.querySelector("#adminDashDone"),
+  adminDashMissing: document.querySelector("#adminDashMissing"),
+  adminDashLatestList: document.querySelector("#adminDashLatestList"),
+  adminDashMissingList: document.querySelector("#adminDashMissingList"),
+  accountFormTitle: document.querySelector("#accountFormTitle"),
   accountForm: document.querySelector("#accountForm"),
   accountStudentId: document.querySelector("#accountStudentId"),
   accountStudentName: document.querySelector("#accountStudentName"),
   accountStudentMajor: document.querySelector("#accountStudentMajor"),
   accountStudentPassword: document.querySelector("#accountStudentPassword"),
+  accountWorkplace: document.querySelector("#accountWorkplace"),
+  accountStartTime: document.querySelector("#accountStartTime"),
+  accountEndTime: document.querySelector("#accountEndTime"),
+  accountMapsLink: document.querySelector("#accountMapsLink"),
+  accountRadius: document.querySelector("#accountRadius"),
+  accountSubmitBtn: document.querySelector("#accountSubmitBtn"),
+  accountCancelEditBtn: document.querySelector("#accountCancelEditBtn"),
   studentAccountList: document.querySelector("#studentAccountList"),
+  studentProfileForm: document.querySelector("#studentProfileForm"),
+  profilePhotoInput: document.querySelector("#profilePhotoInput"),
+  profilePhotoBtn: document.querySelector("#profilePhotoBtn"),
+  profilePhotoName: document.querySelector("#profilePhotoName"),
+  profileAvatarInitial: document.querySelector("#profileAvatarInitial"),
+  profileAvatarImg: document.querySelector("#profileAvatarImg"),
+  profileStudentId: document.querySelector("#profileStudentId"),
+  profileStudentName: document.querySelector("#profileStudentName"),
+  profileStudentMajor: document.querySelector("#profileStudentMajor"),
+  profileCurrentPassword: document.querySelector("#profileCurrentPassword"),
+  profileNewPassword: document.querySelector("#profileNewPassword"),
+  profileConfirmPassword: document.querySelector("#profileConfirmPassword"),
   exportBtn: document.querySelector("#exportBtn"),
   toast: document.querySelector("#toast"),
   modal: document.querySelector("#appModal"),
@@ -198,11 +237,25 @@ function baseStudents() {
 }
 
 function normalizeStudent(student) {
+  const workplace = student.workplace || {};
+  const lat = Number(workplace.lat);
+  const lng = Number(workplace.lng);
+  const radius = Number(workplace.radius);
   return {
     id: String(student.id || "").trim(),
     name: String(student.name || "").trim(),
     major: String(student.major || "").trim() || "ไม่ระบุสาขา",
     password: String(student.password || "student123"),
+    profilePhoto: String(student.profilePhoto || ""),
+    workplace: {
+      name: String(workplace.name || "").trim(),
+      mapLink: String(workplace.mapLink || "").trim(),
+      startTime: String(workplace.startTime || ""),
+      endTime: String(workplace.endTime || ""),
+      lat: Number.isFinite(lat) ? lat : null,
+      lng: Number.isFinite(lng) ? lng : null,
+      radius: Number.isFinite(radius) && radius > 0 ? radius : 200,
+    },
   };
 }
 
@@ -247,7 +300,285 @@ function currentStudent() {
     id: elements.userId.value.trim() || "65010001",
     name: "นักศึกษาฝึกงาน",
     major: "ไม่ระบุสาขา",
+    profilePhoto: "",
   };
+}
+
+function validLatLng(lat, lng) {
+  return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+}
+
+function parseCoordinatePair(text) {
+  const match = String(text || "").match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
+  if (!match) {
+    return null;
+  }
+
+  const lat = Number(match[1]);
+  const lng = Number(match[2]);
+  return validLatLng(lat, lng) ? { lat, lng } : null;
+}
+
+function parseGoogleMapsCoordinates(value) {
+  const text = String(value || "").trim();
+  if (!text) {
+    return null;
+  }
+
+  const bangCoords = text.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+  if (bangCoords) {
+    const lat = Number(bangCoords[1]);
+    const lng = Number(bangCoords[2]);
+    if (validLatLng(lat, lng)) {
+      return { lat, lng };
+    }
+  }
+
+  const atCoords = text.match(/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
+  if (atCoords) {
+    const lat = Number(atCoords[1]);
+    const lng = Number(atCoords[2]);
+    if (validLatLng(lat, lng)) {
+      return { lat, lng };
+    }
+  }
+
+  try {
+    const url = new URL(text);
+    for (const key of ["q", "query", "ll", "center"]) {
+      const coords = parseCoordinatePair(url.searchParams.get(key));
+      if (coords) {
+        return coords;
+      }
+    }
+  } catch {
+    // Not a URL; it may still be a plain coordinate pair.
+  }
+
+  return parseCoordinatePair(text);
+}
+
+function validationErrorId(element) {
+  return `${element.id || element.dataset.validationId}Error`;
+}
+
+function ensureFieldError(element) {
+  const errorId = validationErrorId(element);
+  let error = document.querySelector(`#${errorId}`);
+  if (!error) {
+    error = document.createElement("small");
+    error.className = "field-error";
+    error.id = errorId;
+    element.insertAdjacentElement("afterend", error);
+  }
+  return error;
+}
+
+function setFieldError(element, message) {
+  const error = ensureFieldError(element);
+  error.textContent = message;
+  element.classList.add("field-invalid");
+  element.setAttribute("aria-invalid", "true");
+  element.setAttribute("aria-describedby", validationErrorId(element));
+}
+
+function clearFieldError(element) {
+  const error = document.querySelector(`#${validationErrorId(element)}`);
+  if (error) {
+    error.textContent = "";
+  }
+  element.classList.remove("field-invalid");
+  element.removeAttribute("aria-invalid");
+  element.removeAttribute("aria-describedby");
+}
+
+function clearAllFieldErrors(scope = document) {
+  scope.querySelectorAll(".field-invalid").forEach((element) => clearFieldError(element));
+  scope.querySelectorAll(".field-error").forEach((error) => {
+    error.textContent = "";
+  });
+}
+
+function validateRequiredFields(fields) {
+  let firstInvalid = null;
+
+  fields.forEach(({ element, message }) => {
+    if (String(element.value || "").trim()) {
+      clearFieldError(element);
+      return;
+    }
+
+    setFieldError(element, message);
+    firstInvalid ||= element;
+  });
+
+  if (firstInvalid) {
+    firstInvalid.focus();
+    return false;
+  }
+
+  return true;
+}
+
+function validateAccountForm() {
+  const hasRequiredValues = validateRequiredFields([
+    { element: elements.accountStudentId, message: "กรุณากรอกรหัสนักศึกษา" },
+    { element: elements.accountStudentName, message: "กรุณากรอกชื่อนักศึกษา" },
+    { element: elements.accountStudentMajor, message: "กรุณากรอกสาขา" },
+    { element: elements.accountStudentPassword, message: "กรุณากำหนดรหัสผ่าน" },
+    { element: elements.accountWorkplace, message: "กรุณากรอกสถานที่ฝึกงาน" },
+    { element: elements.accountStartTime, message: "กรุณาเลือกเวลาเข้างาน" },
+    { element: elements.accountEndTime, message: "กรุณาเลือกเวลาเลิกงาน" },
+    { element: elements.accountMapsLink, message: "กรุณาวาง Google Maps Link หรือพิกัด" },
+    { element: elements.accountRadius, message: "กรุณากำหนดรัศมีที่ยอมรับ" },
+  ]);
+
+  if (!hasRequiredValues) {
+    return null;
+  }
+
+  const coordinates = parseGoogleMapsCoordinates(elements.accountMapsLink.value);
+  if (!coordinates) {
+    setFieldError(
+      elements.accountMapsLink,
+      "ระบบอ่านพิกัดจากลิงก์นี้ไม่ได้ กรุณาวางลิงก์ที่มีพิกัด หรือพิมพ์ 13.7563,100.5018",
+    );
+    elements.accountMapsLink.focus();
+    return null;
+  }
+  clearFieldError(elements.accountMapsLink);
+
+  const radius = Number(elements.accountRadius.value);
+  if (!Number.isFinite(radius) || radius < 50) {
+    setFieldError(elements.accountRadius, "กรุณากำหนดรัศมีอย่างน้อย 50 เมตร");
+    elements.accountRadius.focus();
+    return null;
+  }
+  clearFieldError(elements.accountRadius);
+
+  if (elements.accountStartTime.value && elements.accountEndTime.value && elements.accountStartTime.value >= elements.accountEndTime.value) {
+    setFieldError(elements.accountEndTime, "เวลาเลิกงานต้องมากกว่าเวลาเข้างาน");
+    elements.accountEndTime.focus();
+    return null;
+  }
+  clearFieldError(elements.accountEndTime);
+
+  return coordinates;
+}
+
+function setupInlineValidation() {
+  [
+    elements.userId,
+    elements.password,
+    elements.accountStudentId,
+    elements.accountStudentName,
+    elements.accountStudentMajor,
+    elements.accountStudentPassword,
+    elements.accountWorkplace,
+    elements.accountStartTime,
+    elements.accountEndTime,
+    elements.accountMapsLink,
+    elements.accountRadius,
+    elements.profileCurrentPassword,
+    elements.profileNewPassword,
+    elements.profileConfirmPassword,
+  ].forEach((element) => {
+    element?.addEventListener("input", () => clearFieldError(element));
+    element?.addEventListener("change", () => clearFieldError(element));
+  });
+}
+
+function avatarInitial(user = state.user) {
+  return String(user?.name || user?.id || "I").trim().charAt(0).toUpperCase() || "I";
+}
+
+function renderAvatar(initialElement, imageElement, user = state.user) {
+  if (!initialElement || !imageElement) {
+    return;
+  }
+
+  initialElement.textContent = avatarInitial(user);
+  if (user?.profilePhoto) {
+    imageElement.src = user.profilePhoto;
+    imageElement.classList.remove("hidden");
+    initialElement.classList.add("hidden");
+  } else {
+    imageElement.removeAttribute("src");
+    imageElement.classList.add("hidden");
+    initialElement.classList.remove("hidden");
+  }
+}
+
+function updateShellProfile() {
+  renderAvatar(elements.topbarAvatarInitial, elements.topbarAvatarImg, state.user);
+}
+
+function hasWorkplaceRule(student = state.user) {
+  const workplace = student?.workplace;
+  return Boolean(
+    workplace?.name &&
+      workplace?.startTime &&
+      workplace?.endTime &&
+      Number.isFinite(Number(workplace.lat)) &&
+      Number.isFinite(Number(workplace.lng)) &&
+      Number(workplace.radius) > 0,
+  );
+}
+
+function formatWorkplaceRule(student = state.user) {
+  if (!hasWorkplaceRule(student)) {
+    return "Admin ยังไม่ได้ตั้งค่าสถานที่และเวลาฝึกงาน";
+  }
+
+  const workplace = student.workplace;
+  return `${workplace.name} · เวลา ${workplace.startTime}-${workplace.endTime} · รัศมี ${workplace.radius} เมตร`;
+}
+
+function distanceMeters(from, to) {
+  const earthRadius = 6371000;
+  const toRadians = (value) => (value * Math.PI) / 180;
+  const lat1 = toRadians(from.lat);
+  const lat2 = toRadians(to.lat);
+  const deltaLat = toRadians(to.lat - from.lat);
+  const deltaLng = toRadians(to.lng - from.lng);
+  const a =
+    Math.sin(deltaLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) ** 2;
+  return earthRadius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function isLateForWork(startTime, date = new Date()) {
+  if (!startTime || !/^\d{2}:\d{2}$/.test(startTime)) {
+    return false;
+  }
+
+  const [hour, minute] = startTime.split(":").map(Number);
+  const start = new Date(date);
+  start.setHours(hour, minute, 0, 0);
+  return date > start;
+}
+
+function validateWorkplacePosition(position) {
+  if (!hasWorkplaceRule()) {
+    return { distance: null, rule: null };
+  }
+
+  const workplace = state.user.workplace;
+  const current = {
+    lat: position.coords.latitude,
+    lng: position.coords.longitude,
+  };
+  const target = {
+    lat: Number(workplace.lat),
+    lng: Number(workplace.lng),
+  };
+  const distance = Math.round(distanceMeters(current, target));
+
+  if (distance > Number(workplace.radius)) {
+    throw new Error(`คุณอยู่นอกพื้นที่ ${workplace.name} ระยะห่างประมาณ ${distance} เมตร ต้องอยู่ในรัศมี ${workplace.radius} เมตร`);
+  }
+
+  return { distance, rule: workplace };
 }
 
 function showToast(message) {
@@ -369,6 +700,7 @@ function resetPhotoSelection() {
   elements.photoPreview.classList.add("hidden");
   elements.photoEmpty.classList.remove("hidden");
   elements.photoLabel.textContent = "เพิ่มรูปภาพตอนเช็คอิน";
+  clearFieldError(elements.photoPickerBtn);
 }
 
 function syncCurrentDay() {
@@ -419,14 +751,19 @@ function setRole(role) {
   });
   elements.userId.value = role === "admin" ? "teacher01" : "65010001";
   elements.password.value = role === "admin" ? "admin123" : "student123";
+  clearAllFieldErrors();
 }
 
 function defaultView() {
-  return state.role === "admin" ? "adminView" : "studentView";
+  return state.role === "admin" ? "adminDashboardView" : "studentView";
 }
 
 function allowedView(viewId) {
-  return state.role === "admin" || viewId !== "adminView";
+  if (state.role === "admin") {
+    return viewId !== "studentView" && viewId !== "studentProfileView";
+  }
+
+  return viewId !== "adminDashboardView" && viewId !== "adminView" && viewId !== "accountView";
 }
 
 function saveSession() {
@@ -477,6 +814,7 @@ function toggleMobileMenu() {
 function showView(viewId, options = {}) {
   const shouldPersist = options.persist !== false;
   const nextView = allowedView(viewId) ? viewId : defaultView();
+  clearAllFieldErrors();
   state.activeView = nextView;
   elements.views.forEach((view) => view.classList.toggle("hidden", view.id !== nextView));
   elements.navItems.forEach((item) => {
@@ -504,8 +842,10 @@ function showDashboard(viewId = defaultView()) {
 
   elements.welcomeTitle.textContent =
     state.role === "admin" ? "ภาพรวมเวลาฝึกงาน" : `สวัสดี ${state.user.name}`;
+  updateShellProfile();
 
   elements.adminOnly.forEach((item) => item.classList.toggle("hidden", state.role !== "admin"));
+  elements.studentOnly.forEach((item) => item.classList.toggle("hidden", state.role === "admin"));
   showView(viewId, { persist: false });
   saveSession();
   render();
@@ -515,12 +855,21 @@ async function login(event) {
   event.preventDefault();
   syncCurrentDay();
 
+  if (
+    !validateRequiredFields([
+      { element: elements.userId, message: "กรุณากรอกรหัสผู้ใช้" },
+      { element: elements.password, message: "กรุณากรอกรหัสผ่าน" },
+    ])
+  ) {
+    return;
+  }
+
   if (state.role === "admin") {
     if (elements.userId.value.trim() !== "teacher01" || elements.password.value !== "admin123") {
-      await showAlert("เข้าสู่ระบบไม่สำเร็จ", "กรุณาตรวจสอบรหัสอาจารย์และรหัสผ่าน", "!");
+      await showAlert("เข้าสู่ระบบไม่สำเร็จ", "กรุณาตรวจสอบรหัส Admin และรหัสผ่าน", "!");
       return;
     }
-    state.user = { id: "teacher01", name: "อาจารย์ผู้ดูแล", role: "admin" };
+    state.user = { id: "teacher01", name: "Admin ผู้ดูแล", role: "admin" };
   } else {
     const student = getStudents().find((item) => item.id === elements.userId.value.trim());
     if (!student || student.password !== elements.password.value) {
@@ -537,8 +886,10 @@ function logout() {
   state.user = null;
   state.activeView = "studentView";
   state.isCheckingIn = false;
+  state.historyVisibleCount = HISTORY_PAGE_SIZE;
   clearSession();
   resetPhotoSelection();
+  clearAllFieldErrors();
   elements.dashboard.classList.add("hidden");
   closeMobileMenu();
 
@@ -561,6 +912,8 @@ function updateStudentDashboard() {
   elements.currentDate.textContent = prettyDate(now);
   elements.summaryDate.textContent = prettyDate(now);
   elements.statusPill.className = "status-pill";
+  elements.internRuleTitle.textContent = hasWorkplaceRule() ? state.user.workplace.name : "สถานที่ฝึกงาน";
+  elements.internRuleText.textContent = formatWorkplaceRule();
 
   if (!record) {
     elements.todayStatus.textContent = "ยังไม่ได้เช็คอิน";
@@ -579,7 +932,9 @@ function updateStudentDashboard() {
   elements.summaryIn.textContent = prettyTime(record.checkIn);
   elements.summaryOut.textContent = prettyTime(record.checkOut);
   elements.summaryStatus.textContent = record.status;
-  elements.locationText.textContent = `${record.location.lat.toFixed(5)}, ${record.location.lng.toFixed(5)}`;
+  elements.locationText.textContent = `${record.location.lat.toFixed(5)}, ${record.location.lng.toFixed(5)}${
+    record.distanceMeters ? ` · ห่างจากสถานที่ ${record.distanceMeters} เมตร` : ""
+  }`;
 
   if (record.checkOut) {
     elements.todayStatus.textContent = "เช็คเอาท์แล้ว";
@@ -605,9 +960,80 @@ function renderHistory() {
     .filter((record) => !state.user || state.user.role === "admin" || record.studentId === state.user.id)
     .sort((a, b) => new Date(b.checkIn) - new Date(a.checkIn));
 
+  if (state.user?.role === "admin") {
+    if (!records.length) {
+      elements.historyList.innerHTML = `<p class="hint">ยังไม่มีประวัติการบันทึกเวลา</p>`;
+      return;
+    }
+
+    const latestDate = records.reduce((latest, record) => (record.date > latest ? record.date : latest), records[0].date);
+    const latestRecords = records.filter((record) => record.date === latestDate);
+    const visibleRecords = latestRecords.slice(0, state.historyVisibleCount);
+    const moreButton =
+      visibleRecords.length < latestRecords.length
+        ? `<button class="secondary-btn history-more-btn" type="button" id="historyViewMoreBtn">View more</button>`
+        : "";
+
+    elements.historyList.innerHTML = `
+      <p class="history-meta">ข้อมูลล่าสุดวันที่ ${prettyDate(latestDate)} แสดง ${visibleRecords.length} จาก ${latestRecords.length} รายการ</p>
+      ${visibleRecords.map(recordCardTemplate).join("")}
+      ${moreButton}
+    `;
+    return;
+  }
+
   elements.historyList.innerHTML = records.length
     ? records.map(recordCardTemplate).join("")
     : `<p class="hint">ยังไม่มีประวัติการบันทึกเวลา</p>`;
+}
+
+function showMoreHistory() {
+  state.historyVisibleCount += HISTORY_PAGE_SIZE;
+  renderHistory();
+}
+
+function missingStudentTemplate(student) {
+  return `
+    <div class="missing-item">
+      <div>
+        <strong>${student.name}</strong>
+        <span>${student.id} · ${student.major}</span>
+      </div>
+      <em>รอเช็คอิน</em>
+    </div>
+  `;
+}
+
+function renderAdminDashboard() {
+  if (!elements.adminDashboardDate) {
+    return;
+  }
+
+  const today = todayKey();
+  const students = getStudents();
+  const records = getRecords();
+  const todayRecords = records
+    .filter((record) => record.date === today)
+    .sort((a, b) => new Date(b.checkIn) - new Date(a.checkIn));
+  const checkedInIds = new Set(todayRecords.map((record) => record.studentId));
+  const activeRecords = todayRecords.filter((record) => !record.checkOut);
+  const doneRecords = todayRecords.filter((record) => record.checkOut);
+  const missingStudents = students.filter((student) => !checkedInIds.has(student.id));
+
+  elements.adminDashboardDate.textContent = prettyDate(today);
+  elements.adminDashStudents.textContent = students.length;
+  elements.adminDashCheckedIn.textContent = todayRecords.length;
+  elements.adminDashActive.textContent = activeRecords.length;
+  elements.adminDashDone.textContent = doneRecords.length;
+  elements.adminDashMissing.textContent = missingStudents.length;
+
+  elements.adminDashLatestList.innerHTML = todayRecords.length
+    ? todayRecords.slice(0, 5).map(recordCardTemplate).join("")
+    : `<p class="hint">วันนี้ยังไม่มีรายการเช็คอิน</p>`;
+
+  elements.adminDashMissingList.innerHTML = missingStudents.length
+    ? missingStudents.slice(0, 6).map(missingStudentTemplate).join("")
+    : `<p class="hint">วันนี้นักศึกษาทุกคนเช็คอินแล้ว</p>`;
 }
 
 function recordCardTemplate(record) {
@@ -622,6 +1048,7 @@ function recordCardTemplate(record) {
       <div>
         <h4>${record.studentName}</h4>
         <p>${prettyDate(record.date)} · เช็คอิน ${prettyTime(record.checkIn)} · เช็คเอาท์ ${prettyTime(record.checkOut)}</p>
+        ${record.workplaceName ? `<p>สถานที่ ${record.workplaceName}${record.distanceMeters ? ` · ระยะ ${record.distanceMeters} เมตร` : ""}</p>` : ""}
         <p>GPS ${record.location.lat.toFixed(5)}, ${record.location.lng.toFixed(5)}</p>
       </div>
       <span class="record-status ${statusClass}">${record.status}</span>
@@ -632,9 +1059,40 @@ function recordCardTemplate(record) {
 function renderAdmin() {
   const keyword = elements.adminSearch.value.trim().toLowerCase();
   const selectedDate = elements.adminDateFilter.value;
+  const selectedStatus = getAdminStatusFilter();
+  const statusDate = selectedDate || todayKey();
+  const students = getStudents();
   const records = getRecords().sort((a, b) => new Date(b.checkIn) - new Date(a.checkIn));
   const dateRecords = selectedDate ? records.filter((record) => record.date === selectedDate) : records;
-  const filtered = dateRecords.filter((record) => {
+
+  const checkedInForStatusDate = new Set(records.filter((record) => record.date === statusDate).map((record) => record.studentId));
+  const missingRows = students
+    .filter((student) => !checkedInForStatusDate.has(student.id))
+    .map((student) => ({
+      isMissing: true,
+      studentId: student.id,
+      studentName: student.name,
+      date: statusDate,
+      checkIn: "",
+      checkOut: "",
+      status: "รอเช็คอิน",
+      location: null,
+    }));
+
+  const statusRecords =
+    selectedStatus === "missing"
+      ? missingRows
+      : dateRecords.filter((record) => {
+          if (selectedStatus === "active") {
+            return !record.checkOut;
+          }
+          if (selectedStatus === "done") {
+            return Boolean(record.checkOut);
+          }
+          return true;
+        });
+
+  const filtered = statusRecords.filter((record) => {
     const haystack = `${record.studentName} ${record.studentId}`.toLowerCase();
     return !keyword || haystack.includes(keyword);
   });
@@ -648,12 +1106,25 @@ function renderAdmin() {
 
   elements.adminTable.innerHTML = filtered.length
     ? filtered.map(adminRowTemplate).join("")
-    : `<tr><td colspan="6">${selectedDate ? "ไม่พบข้อมูลในวันที่เลือก" : "ไม่พบข้อมูลที่ค้นหา"}</td></tr>`;
+    : `<tr><td colspan="6">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</td></tr>`;
+}
+
+function getAdminStatusFilter() {
+  return elements.adminStatusFilter.dataset.status || "all";
+}
+
+function setAdminStatusFilter(status) {
+  elements.adminStatusFilter.dataset.status = status;
+  elements.adminStatusFilter.querySelectorAll("[data-status]").forEach((button) => {
+    const isActive = button.dataset.status === status;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
 }
 
 function adminRowTemplate(record) {
-  const statusClass = record.checkOut ? "done" : "active";
-  const mapUrl = `https://www.google.com/maps?q=${record.location.lat},${record.location.lng}`;
+  const statusClass = record.isMissing ? "waiting" : record.checkOut ? "done" : "active";
+  const mapUrl = record.location ? `https://www.google.com/maps?q=${record.location.lat},${record.location.lng}` : "";
   return `
     <tr>
       <td><strong>${record.studentName}</strong><br /><span class="hint">${record.studentId}</span></td>
@@ -661,7 +1132,7 @@ function adminRowTemplate(record) {
       <td>${prettyTime(record.checkIn)}</td>
       <td>${prettyTime(record.checkOut)}</td>
       <td><span class="record-status ${statusClass}">${record.status}</span></td>
-      <td><a class="gps-link" href="${mapUrl}" target="_blank" rel="noreferrer">เปิดแผนที่</a></td>
+      <td>${mapUrl ? `<a class="gps-link" href="${mapUrl}" target="_blank" rel="noreferrer">เปิดแผนที่</a><br /><span class="hint">${record.workplaceName || ""}${record.distanceMeters ? ` · ${record.distanceMeters} ม.` : ""}</span>` : `<span class="hint">-</span>`}</td>
     </tr>
   `;
 }
@@ -673,9 +1144,10 @@ function accountCardTemplate(student) {
       <div>
         <strong>${student.name}</strong>
         <p>${student.id} · ${student.major}</p>
+        <p>${formatWorkplaceRule(student)}</p>
       </div>
       <div class="account-actions">
-        <span class="account-password">รหัสผ่าน: ${student.password}</span>
+        <button class="secondary-btn account-edit-btn" type="button" data-student-edit="${student.id}">แก้ไข</button>
         ${
           isDefaultAccount
             ? `<span class="account-fixed">บัญชีเริ่มต้น</span>`
@@ -693,27 +1165,84 @@ function renderAccounts() {
     : `<p class="hint">ยังไม่มี account นักศึกษา</p>`;
 }
 
+function setAccountFormMode(studentId = null) {
+  state.editingStudentId = studentId;
+  const isEditing = Boolean(studentId);
+  elements.accountForm.classList.toggle("is-editing", isEditing);
+  elements.accountFormTitle.textContent = isEditing ? "แก้ไข Account นักศึกษา" : "สร้าง Account ให้นักศึกษา";
+  elements.accountSubmitBtn.textContent = isEditing ? "บันทึกการแก้ไข" : "สร้าง account";
+  elements.accountCancelEditBtn.classList.toggle("hidden", !isEditing);
+  elements.accountStudentId.readOnly = isEditing;
+  clearAllFieldErrors(elements.accountForm);
+}
+
+function resetAccountForm() {
+  elements.accountForm.reset();
+  setAccountFormMode(null);
+}
+
+function editStudentAccount(studentId) {
+  const student = getStudents().find((item) => item.id === studentId);
+  if (!student) {
+    return;
+  }
+
+  const workplace = student.workplace || {};
+  const hasCoords = validLatLng(Number(workplace.lat), Number(workplace.lng));
+  elements.accountStudentId.value = student.id;
+  elements.accountStudentName.value = student.name;
+  elements.accountStudentMajor.value = student.major;
+  elements.accountStudentPassword.value = student.password;
+  elements.accountWorkplace.value = workplace.name || "";
+  elements.accountStartTime.value = workplace.startTime || "";
+  elements.accountEndTime.value = workplace.endTime || "";
+  elements.accountMapsLink.value = workplace.mapLink || (hasCoords ? `${workplace.lat},${workplace.lng}` : "");
+  elements.accountRadius.value = workplace.radius || 200;
+  setAccountFormMode(student.id);
+  elements.accountForm.scrollIntoView({ behavior: "smooth", block: "start" });
+  elements.accountStudentName.focus();
+}
+
 async function createStudentAccount(event) {
   event.preventDefault();
+
+  const coordinates = validateAccountForm();
+  if (!coordinates) {
+    return;
+  }
 
   const student = normalizeStudent({
     id: elements.accountStudentId.value,
     name: elements.accountStudentName.value,
     major: elements.accountStudentMajor.value,
     password: elements.accountStudentPassword.value,
+    profilePhoto: getStudents().find((item) => item.id === elements.accountStudentId.value.trim())?.profilePhoto || "",
+    workplace: {
+      name: elements.accountWorkplace.value,
+      mapLink: elements.accountMapsLink.value,
+      startTime: elements.accountStartTime.value,
+      endTime: elements.accountEndTime.value,
+      lat: coordinates.lat,
+      lng: coordinates.lng,
+      radius: elements.accountRadius.value,
+    },
   });
 
-  if (!student.id || !student.name || !student.password) {
-    await showAlert("ข้อมูลไม่ครบ", "กรุณากรอกรหัสนักศึกษา ชื่อ และรหัสผ่าน", "!");
+  if (!student.id || !student.name || !student.password || !hasWorkplaceRule(student)) {
+    setFieldError(elements.accountMapsLink, "กรุณาตรวจสอบข้อมูลสถานที่ฝึกงานให้ครบ");
+    elements.accountMapsLink.focus();
     return;
   }
 
   const students = getStudents();
-  const isUpdate = students.some((item) => item.id === student.id);
-  saveStudents([...students, student]);
-  elements.accountForm.reset();
+  const isEditing = Boolean(state.editingStudentId);
+  const nextStudents = isEditing
+    ? students.map((item) => (item.id === state.editingStudentId ? student : item))
+    : [...students, student];
+  saveStudents(nextStudents);
+  resetAccountForm();
   renderAccounts();
-  await showAlert(isUpdate ? "อัปเดต account แล้ว" : "สร้าง account สำเร็จ", `${student.name} สามารถเข้าสู่ระบบด้วยรหัส ${student.id} ได้แล้ว`, "✓");
+  await showAlert(isEditing ? "แก้ไข account สำเร็จ" : "สร้าง account สำเร็จ", "", "✓");
 }
 
 async function deleteStudentAccount(studentId) {
@@ -738,11 +1267,163 @@ async function deleteStudentAccount(studentId) {
   }
 
   saveStudents(students.filter((item) => item.id !== studentId));
+  if (state.editingStudentId === studentId) {
+    resetAccountForm();
+  }
   renderAccounts();
 }
 
+function renderStudentProfile() {
+  if (state.user?.role !== "student") {
+    return;
+  }
+
+  elements.profileStudentId.value = state.user.id || "";
+  elements.profileStudentName.value = state.user.name || "";
+  elements.profileStudentMajor.value = state.user.major || "";
+  elements.profilePhotoName.textContent = state.selectedProfilePhotoName || (state.user.profilePhoto ? "มีรูปโปรไฟล์แล้ว" : "เลือกรูปภาพจากเครื่อง");
+  renderAvatar(elements.profileAvatarInitial, elements.profileAvatarImg, {
+    ...state.user,
+    profilePhoto: state.selectedProfilePhoto || state.user.profilePhoto,
+  });
+}
+
+function resizeProfilePhoto(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("อ่านไฟล์รูปภาพไม่ได้"));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error("ไฟล์รูปภาพนี้ไม่สามารถใช้งานได้"));
+      image.onload = () => {
+        const size = 320;
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        const side = Math.min(image.width, image.height);
+        const sx = (image.width - side) / 2;
+        const sy = (image.height - side) / 2;
+        canvas.width = size;
+        canvas.height = size;
+        context.drawImage(image, sx, sy, side, side, 0, 0, size, size);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleProfilePhoto(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    setFieldError(elements.profilePhotoBtn, "กรุณาเลือกไฟล์รูปภาพเท่านั้น");
+    return;
+  }
+
+  try {
+    state.selectedProfilePhoto = await resizeProfilePhoto(file);
+    state.selectedProfilePhotoName = file.name;
+    clearFieldError(elements.profilePhotoBtn);
+    renderStudentProfile();
+  } catch (error) {
+    setFieldError(elements.profilePhotoBtn, error.message || "ไม่สามารถใช้รูปภาพนี้ได้");
+  }
+}
+
+function validateProfilePasswordChange() {
+  const currentPassword = elements.profileCurrentPassword.value;
+  const newPassword = elements.profileNewPassword.value;
+  const confirmPassword = elements.profileConfirmPassword.value;
+  const wantsPasswordChange = Boolean(currentPassword || newPassword || confirmPassword);
+
+  if (!wantsPasswordChange) {
+    [elements.profileCurrentPassword, elements.profileNewPassword, elements.profileConfirmPassword].forEach(clearFieldError);
+    return null;
+  }
+
+  let firstInvalid = null;
+  if (!currentPassword) {
+    setFieldError(elements.profileCurrentPassword, "กรุณากรอกรหัสผ่านเดิม");
+    firstInvalid ||= elements.profileCurrentPassword;
+  } else if (currentPassword !== state.user.password) {
+    setFieldError(elements.profileCurrentPassword, "รหัสผ่านเดิมไม่ถูกต้อง");
+    firstInvalid ||= elements.profileCurrentPassword;
+  } else {
+    clearFieldError(elements.profileCurrentPassword);
+  }
+
+  if (!newPassword) {
+    setFieldError(elements.profileNewPassword, "กรุณากรอกรหัสผ่านใหม่");
+    firstInvalid ||= elements.profileNewPassword;
+  } else if (newPassword.length < 6) {
+    setFieldError(elements.profileNewPassword, "รหัสผ่านใหม่ควรมีอย่างน้อย 6 ตัวอักษร");
+    firstInvalid ||= elements.profileNewPassword;
+  } else {
+    clearFieldError(elements.profileNewPassword);
+  }
+
+  if (!confirmPassword) {
+    setFieldError(elements.profileConfirmPassword, "กรุณายืนยันรหัสผ่านใหม่");
+    firstInvalid ||= elements.profileConfirmPassword;
+  } else if (confirmPassword !== newPassword) {
+    setFieldError(elements.profileConfirmPassword, "รหัสผ่านใหม่ไม่ตรงกัน");
+    firstInvalid ||= elements.profileConfirmPassword;
+  } else {
+    clearFieldError(elements.profileConfirmPassword);
+  }
+
+  if (firstInvalid) {
+    firstInvalid.focus();
+    return false;
+  }
+
+  return newPassword;
+}
+
+async function saveStudentProfile(event) {
+  event.preventDefault();
+
+  if (state.user?.role !== "student") {
+    return;
+  }
+
+  const nextPassword = validateProfilePasswordChange();
+  if (nextPassword === false) {
+    return;
+  }
+
+  if (!state.selectedProfilePhoto && !nextPassword) {
+    await showAlert("ไม่มีข้อมูลที่เปลี่ยนแปลง", "กรุณาเลือกรูปโปรไฟล์ใหม่ หรือกรอกรหัสผ่านใหม่ก่อนบันทึก", "i");
+    return;
+  }
+
+  const students = getStudents();
+  const updatedStudent = normalizeStudent({
+    ...state.user,
+    password: nextPassword || state.user.password,
+    profilePhoto: state.selectedProfilePhoto || state.user.profilePhoto || "",
+  });
+  saveStudents(students.map((student) => (student.id === updatedStudent.id ? updatedStudent : student)));
+
+  state.user = { ...updatedStudent, role: "student" };
+  state.selectedProfilePhoto = "";
+  state.selectedProfilePhotoName = "";
+  elements.studentProfileForm.reset();
+  clearAllFieldErrors(elements.studentProfileForm);
+  saveSession();
+  render();
+  await showAlert("บันทึกโปรไฟล์สำเร็จ", "", "✓");
+}
+
 function render() {
+  updateShellProfile();
   updateStudentDashboard();
+  renderStudentProfile();
+  renderAdminDashboard();
   renderHistory();
   renderAdmin();
   renderAccounts();
@@ -777,10 +1458,11 @@ async function checkIn() {
   }
 
   if (!state.selectedPhoto) {
-    await showAlert("กรุณาเพิ่มรูปภาพ", "ต้องเพิ่มรูปภาพหลักฐานก่อนกดเช็คอิน", "!");
+    setFieldError(elements.photoPickerBtn, "กรุณาเพิ่มรูปภาพหลักฐานก่อนกดเช็คอิน");
     elements.photoPickerBtn.focus();
     return;
   }
+  clearFieldError(elements.photoPickerBtn);
 
   const confirmed = await showModal({
     title: "ยืนยันการเช็คอิน",
@@ -800,6 +1482,7 @@ async function checkIn() {
 
   try {
     const position = await getPosition();
+    const workplaceCheck = validateWorkplacePosition(position);
     const records = getRecords();
     if (getTodayRecord(records)) {
       state.isCheckingIn = false;
@@ -808,6 +1491,7 @@ async function checkIn() {
       return;
     }
     const now = new Date();
+    const late = hasWorkplaceRule() && isLateForWork(state.user.workplace.startTime, now);
     records.push({
       id: crypto.randomUUID(),
       studentId: state.user.id,
@@ -815,11 +1499,13 @@ async function checkIn() {
       date: todayKey(),
       checkIn: now.toISOString(),
       checkOut: "",
-      status: "กำลังฝึกงาน",
+      status: late ? "มาสาย" : "กำลังฝึกงาน",
       location: {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       },
+      workplaceName: workplaceCheck.rule?.name || "",
+      distanceMeters: workplaceCheck.distance,
       photo: "",
       photoName: state.selectedPhotoName,
       hasPhoto: true,
@@ -876,6 +1562,7 @@ function handlePhoto(event) {
     return;
   }
 
+  clearFieldError(elements.photoPickerBtn);
   state.selectedPhoto = file;
   state.selectedPhotoName = file.name;
   const previewUrl = URL.createObjectURL(file);
@@ -932,8 +1619,12 @@ function restoreSession() {
     setRole(state.role);
 
     if (state.role === "student") {
+      const latestStudent = getStudents().find((student) => student.id === state.user.id);
+      if (latestStudent) {
+        state.user = { ...latestStudent, role: "student" };
+      }
       elements.userId.value = state.user.id || "65010001";
-      elements.password.value = "student123";
+      elements.password.value = state.user.password || "student123";
     }
 
     showDashboard(state.activeView);
@@ -948,7 +1639,7 @@ elements.roleOptions.forEach((button) => {
 });
 elements.loginForm.addEventListener("submit", login);
 elements.logoutBtn.addEventListener("click", logout);
-elements.refreshBtn.addEventListener("click", refreshCurrentView);
+elements.refreshBtn?.addEventListener("click", refreshCurrentView);
 elements.mobileMenuToggle?.addEventListener("click", toggleMobileMenu);
 elements.mobileMenuClose?.addEventListener("click", closeMobileMenu);
 elements.mobileMenuBackdrop?.addEventListener("click", closeMobileMenu);
@@ -956,7 +1647,7 @@ elements.mobileLogoutBtn.addEventListener("click", () => {
   closeMobileMenu();
   logout();
 });
-elements.mobileRefreshBtn.addEventListener("click", () => {
+elements.mobileRefreshBtn?.addEventListener("click", () => {
   closeMobileMenu();
   refreshCurrentView();
 });
@@ -978,18 +1669,44 @@ elements.checkInBtn.addEventListener("click", checkIn);
 elements.checkOutBtn.addEventListener("click", checkOut);
 elements.adminSearch.addEventListener("input", renderAdmin);
 elements.adminDateFilter.addEventListener("change", renderAdmin);
+elements.adminStatusFilter.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-status]");
+  if (!button) {
+    return;
+  }
+
+  setAdminStatusFilter(button.dataset.status);
+  renderAdmin();
+});
 elements.adminClearDateFilter.addEventListener("click", () => {
   elements.adminDateFilter.value = "";
+  setAdminStatusFilter("all");
   renderAdmin();
 });
 elements.accountForm.addEventListener("submit", createStudentAccount);
+elements.accountCancelEditBtn.addEventListener("click", resetAccountForm);
+elements.profilePhotoBtn.addEventListener("click", () => elements.profilePhotoInput.click());
+elements.profilePhotoInput.addEventListener("change", handleProfilePhoto);
+elements.studentProfileForm.addEventListener("submit", saveStudentProfile);
 elements.studentAccountList.addEventListener("click", (event) => {
+  const editButton = event.target.closest("[data-student-edit]");
+  if (editButton) {
+    editStudentAccount(editButton.dataset.studentEdit);
+    return;
+  }
+
   const deleteButton = event.target.closest("[data-student-delete]");
   if (deleteButton) {
     deleteStudentAccount(deleteButton.dataset.studentDelete);
   }
 });
+elements.historyList.addEventListener("click", (event) => {
+  if (event.target.closest("#historyViewMoreBtn")) {
+    showMoreHistory();
+  }
+});
 elements.exportBtn.addEventListener("click", exportCsv);
 
+setupInlineValidation();
 startDayRolloverWatcher();
 restoreSession();

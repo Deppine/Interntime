@@ -1,0 +1,677 @@
+﻿<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>INTERNTIME</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/base.css?v=20260605-review-status-edit-only" />
+  <link rel="stylesheet" href="styles/layout.css?v=20260605-review-status-edit-only" />
+  <link rel="stylesheet" href="styles/student.css?v=20260605-review-status-edit-only" />
+  <link rel="stylesheet" href="styles/admin.css?v=20260605-review-status-edit-only" />
+  <link rel="stylesheet" href="styles/modal.css?v=20260605-review-status-edit-only" />
+  <link rel="stylesheet" href="styles/responsive.css?v=20260605-review-status-edit-only" />
+</head>
+
+<body>
+  <main class="app-shell">
+    <section class="login-screen" id="loginScreen">
+      <div class="brand-panel">
+        <div class="brand-art" aria-hidden="true">
+          <img src="assets/hero-attendance.png" alt="" />
+        </div>
+        <h1>INTERNTIME</h1>
+        <p class="brand-copy">
+          เช็คอินพร้อม GPS และรูปภาพ ดูสถานะรายวัน และติดตามประวัติฝึกงานของนักศึกษาได้จากมือถือหรือคอมพิวเตอร์
+        </p>
+        <div class="brand-metrics" aria-label="ภาพรวมระบบ">
+          <div>
+            <strong>GPS</strong>
+            <span>บันทึกพิกัด</span>
+          </div>
+          <div>
+            <strong>Photo</strong>
+            <span>แนบหลักฐาน</span>
+          </div>
+          <div>
+            <strong>Live</strong>
+            <span>สถานะล่าสุด</span>
+          </div>
+        </div>
+      </div>
+
+      <form class="login-card" id="loginForm" novalidate>
+        <div>
+          <p class="eyebrow">เข้าสู่ระบบ</p>
+          <h2>เลือกบทบาทผู้ใช้งาน</h2>
+        </div>
+
+        <div class="role-switch" role="tablist" aria-label="บทบาท">
+          <button class="role-option active" type="button" data-role="student">นักศึกษา</button>
+          <button class="role-option" type="button" data-role="admin">Admin</button>
+        </div>
+
+        <label>
+          รหัสผู้ใช้
+          <input id="userId" type="text" value="65010001" autocomplete="username" />
+        </label>
+        <label>
+          รหัสผ่าน
+          <input id="password" type="password" value="student123" autocomplete="current-password" />
+        </label>
+
+        <button class="primary-btn" type="submit">
+          <span>เข้าสู่ระบบ</span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </form>
+    </section>
+
+    <section class="dashboard hidden" id="dashboard">
+      <header class="topbar">
+        <button class="icon-btn mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="เปิดเมนู" aria-controls="mobileBottomDock" aria-expanded="false">☰</button>
+        <div class="topbar-profile">
+          <div class="profile-avatar small" id="topbarAvatar" aria-hidden="true">
+            <span id="topbarAvatarInitial">I</span>
+            <img class="hidden" id="topbarAvatarImg" alt="" />
+          </div>
+          <div class="topbar-title">
+            <p class="eyebrow">INTERNTIME</p>
+            <h2 id="welcomeTitle">สวัสดี</h2>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button class="ghost-btn" id="logoutBtn" type="button">ออกจากระบบ</button>
+        </div>
+      </header>
+
+      <div class="dashboard-grid">
+        <nav class="sidebar desktop-sidebar" aria-label="เมนูหลัก">
+          <button class="nav-item student-only active" type="button" data-view="studentView">
+            <span aria-hidden="true">⌂</span>
+            หน้าหลัก
+          </button>
+          <button class="nav-item student-only" type="button" data-view="studentProfileView">
+            <span aria-hidden="true" class="line-icon">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M20 21a8 8 0 0 0-16 0" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </span>
+            โปรไฟล์
+          </button>
+          <button class="nav-item admin-only" type="button" data-view="adminDashboardView">
+            <span aria-hidden="true">▤</span>
+            Dashboard
+          </button>
+          <button class="nav-item" type="button" data-view="historyView">
+            <span aria-hidden="true">◷</span>
+            ประวัติ
+          </button>
+          <button class="nav-item admin-only" type="button" data-view="adminView">
+            <span aria-hidden="true">▦</span>
+            จัดการข้อมูล
+          </button>
+          <button class="nav-item admin-only" type="button" data-view="accountView">
+            <span aria-hidden="true">☷</span>
+            จัดการ Account
+          </button>
+        </nav>
+
+        <section class="content-area">
+          <div class="view" id="studentView">
+            <section class="status-hero">
+              <div>
+                <p class="eyebrow">สถานะวันนี้</p>
+                <h3 id="todayStatus">ยังไม่ได้เช็คอิน</h3>
+                <p id="todayMeta">เลือกภาพและกดเช็คอินเพื่อเริ่มบันทึกเวลาฝึกงาน</p>
+              </div>
+              <div class="status-pill" id="statusPill">รอดำเนินการ</div>
+            </section>
+
+            <div class="action-layout">
+              <section class="panel">
+                <div class="panel-title">
+                  <div>
+                    <p class="eyebrow">บันทึกเวลา</p>
+                    <h3>เช็คอิน / เช็คเอาท์</h3>
+                  </div>
+                  <div class="date-chip" id="currentDate">-</div>
+                </div>
+
+                  <input class="photo-input-hidden" id="cameraInput" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true" />
+                  <input class="photo-input-hidden" id="photoInput" type="file" accept="image/*" tabindex="-1" aria-hidden="true" />
+                  <div class="photo-uploader" id="photoPickerBtn" role="button" tabindex="0" aria-label="เพิ่มรูปภาพตอนเช็คอิน">
+                    <div class="photo-empty" id="photoEmpty">
+                      <span class="camera-symbol" aria-hidden="true">▣</span>
+                      <strong id="photoLabel">เพิ่มรูปภาพตอนเช็คอิน</strong>
+                      <small>ถ่ายภาพใหม่หรือเลือกรูปจากเครื่อง</small>
+                    </div>
+                    <img class="photo-preview hidden" id="photoPreview" alt="รูปภาพเช็คอิน" />
+                  </div>
+
+                <div class="location-box" id="locationBox">
+                  <span aria-hidden="true">⌖</span>
+                  <div>
+                    <strong>ตำแหน่ง GPS</strong>
+                    <p id="locationText">ระบบจะขอสิทธิ์ตำแหน่งเมื่อกดเช็คอิน</p>
+                  </div>
+                </div>
+                <div class="intern-rule-box" id="internRuleBox">
+                  <strong id="internRuleTitle">สถานที่ฝึกงาน</strong>
+                  <p id="internRuleText">Admin ยังไม่ได้ตั้งค่าสถานที่และเวลาฝึกงาน</p>
+                </div>
+
+                <div class="check-actions">
+                  <button class="primary-btn" id="checkInBtn" type="button">เช็คอินพร้อม GPS</button>
+                  <button class="secondary-btn danger-btn" id="checkOutBtn" type="button" disabled>เช็คเอาท์</button>
+                </div>
+              </section>
+
+              <section class="panel compact-panel">
+                <p class="eyebrow">สรุปวันนี้</p>
+                <div class="summary-list">
+                  <div>
+                    <span>วันที่</span>
+                    <strong id="summaryDate">-</strong>
+                  </div>
+                  <div>
+                    <span>เวลาเช็คอิน</span>
+                    <strong id="summaryIn">-</strong>
+                  </div>
+                  <div>
+                    <span>เวลาเช็คเอาท์</span>
+                    <strong id="summaryOut">-</strong>
+                  </div>
+                  <div>
+                    <span>สถานะ</span>
+                    <strong id="summaryStatus">ยังไม่เริ่ม</strong>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div class="view hidden" id="historyView">
+            <section class="panel">
+              <div class="panel-title">
+                <div>
+                  <p class="eyebrow">ประวัติการฝึกงาน</p>
+                  <h3>วันที่ เวลา และสถานะ</h3>
+                </div>
+                <div class="history-toolbar">
+                  <label class="admin-only report-date-field">
+                    วันที่รายงาน
+                    <input class="date-input" id="historyDateFilter" type="date" aria-label="เลือกวันที่รายงาน" />
+                  </label>
+                  <button class="secondary-btn" id="exportBtn" type="button">ส่งออก CSV</button>
+                </div>
+              </div>
+              <div class="history-report-summary admin-only" id="historyReportSummary"></div>
+              <div class="record-list" id="historyList"></div>
+            </section>
+          </div>
+
+          <div class="view hidden" id="studentProfileView">
+            <section class="panel profile-panel">
+              <div class="panel-title">
+                <div>
+                  <p class="eyebrow">Account นักศึกษา</p>
+                  <h3>โปรไฟล์ของฉัน</h3>
+                </div>
+              </div>
+              <div class="profile-status-box">
+                <div>
+                  <span>สถานะข้อมูล</span>
+                  <strong class="profile-status-badge" id="profileDataStatus">รอกรอกข้อมูล</strong>
+                </div>
+                <small id="profileUpdatedAt">ยังไม่มีการอัปเดตข้อมูล</small>
+              </div>
+
+              <form class="student-profile-form" id="studentProfileForm" novalidate>
+                <div class="profile-photo-block">
+                  <input class="photo-input-hidden" id="profilePhotoInput" type="file" accept="image/*" tabindex="-1" aria-hidden="true" />
+                  <button class="profile-photo-picker" id="profilePhotoBtn" type="button">
+                    <span class="profile-avatar large" id="profileAvatarPreview">
+                      <span id="profileAvatarInitial">N</span>
+                      <img class="hidden" id="profileAvatarImg" alt="รูปโปรไฟล์" />
+                    </span>
+                    <span>
+                      <strong>เปลี่ยนรูปโปรไฟล์</strong>
+                      <small id="profilePhotoName">เลือกรูปภาพจากเครื่อง</small>
+                    </span>
+                  </button>
+                </div>
+
+                <div class="profile-readonly-grid">
+                  <label>
+                    รหัสนักศึกษา
+                    <input id="profileStudentId" type="text" readonly />
+                  </label>
+                  <label>
+                    ชื่อนักศึกษา
+                    <input id="profileStudentName" type="text" readonly />
+                  </label>
+                  <label class="wide-field">
+                    สาขา
+                    <input id="profileStudentMajor" type="text" readonly />
+                  </label>
+                  <label class="wide-field">
+                    ระดับการศึกษา
+                    <input id="profileEducationLevel" type="text" placeholder="เช่น ปวช. / ปวส. / ปริญญาตรี" />
+                  </label>
+                  <label>
+                    <span class="field-label">เบอร์โทรนักศึกษา <span class="required-mark">*</span></span>
+                    <input id="profilePhone" type="tel" placeholder="เช่น 0801234567" required />
+                  </label>
+                  <label>
+                    <span class="field-label">ชื่อผู้ปกครอง <span class="required-mark">*</span></span>
+                    <input id="profileGuardianName" type="text" placeholder="ชื่อ - นามสกุล" required />
+                  </label>
+                  <label>
+                    <span class="field-label">เบอร์โทรผู้ปกครอง <span class="required-mark">*</span></span>
+                    <input id="profileGuardianPhone" type="tel" placeholder="เช่น 0801234567" required />
+                  </label>
+                  <label class="wide-field">
+                    <span class="field-label">สถานที่ฝึกงาน <span class="required-mark">*</span></span>
+                    <input id="profileWorkplace" type="text" placeholder="เช่น บริษัท / หน่วยงานที่ฝึกงาน" required />
+                  </label>
+                  <label class="wide-field">
+                    <span class="field-label">ที่อยู่สถานประกอบการ <span class="required-mark">*</span></span>
+                    <input id="profileWorkplaceAddress" type="text" placeholder="ที่อยู่บริษัท / หน่วยงาน" required />
+                  </label>
+                  <label>
+                    ชื่อครูฝึก / พี่เลี้ยง
+                    <input id="profileMentorName" type="text" placeholder="ชื่อ - นามสกุล" />
+                  </label>
+                  <label>
+                    เบอร์โทรครูฝึก / พี่เลี้ยง
+                    <input id="profileMentorPhone" type="tel" placeholder="เช่น 0801234567" />
+                  </label>
+                  <label class="wide-field">
+                    ที่อยู่ที่พักปัจจุบัน
+                    <input id="profileResidenceAddress" type="text" placeholder="ที่อยู่ที่พักระหว่างฝึกงาน" />
+                  </label>
+                  <label class="wide-field">
+                    ชื่อเพื่อนร่วมห้อง / คนที่พักด้วย
+                    <input id="profileRoommate" type="text" placeholder="ถ้าไม่มีให้เว้นว่าง" />
+                  </label>
+                  <label class="wide-field">
+                    วันและเวลาฝึกงาน
+                    <input id="profileSchedule" type="text" readonly />
+                  </label>
+                  <label>
+                    Google Maps / พิกัด
+                    <input id="profileMapRule" type="text" readonly />
+                  </label>
+                  <label>
+                    รัศมีเช็คอิน
+                    <input id="profileRadiusRule" type="text" readonly />
+                  </label>
+                </div>
+
+                <div class="password-change-box">
+                  <p class="eyebrow">เปลี่ยนรหัสผ่าน</p>
+                  <div class="profile-password-grid">
+                    <label>
+                      รหัสผ่านเดิม
+                      <input id="profileCurrentPassword" type="password" autocomplete="current-password" />
+                    </label>
+                    <label>
+                      รหัสผ่านใหม่
+                      <input id="profileNewPassword" type="password" autocomplete="new-password" />
+                    </label>
+                    <label>
+                      ยืนยันรหัสผ่านใหม่
+                      <input id="profileConfirmPassword" type="password" autocomplete="new-password" />
+                    </label>
+                  </div>
+                </div>
+
+                <button class="primary-btn" type="submit">บันทึกโปรไฟล์</button>
+              </form>
+            </section>
+          </div>
+
+          <div class="view hidden" id="adminDashboardView">
+            <section class="admin-dashboard-head">
+              <div>
+                <p class="eyebrow">Dashboard Admin</p>
+                <h3>ภาพรวมประจำวันที่ <span id="adminDashboardDate">-</span></h3>
+                <p>ติดตามการเช็คอิน เช็คเอาท์ และสถานะนักศึกษาฝึกงานของวันนี้</p>
+              </div>
+            </section>
+
+            <section class="admin-stats dashboard-stats">
+              <div class="stat-card">
+                <span>นักศึกษาทั้งหมด</span>
+                <strong id="adminDashStudents">0</strong>
+              </div>
+              <div class="stat-card">
+                <span>เช็คอินแล้ว</span>
+                <strong id="adminDashCheckedIn">0</strong>
+              </div>
+              <div class="stat-card">
+                <span>กำลังฝึกงาน</span>
+                <strong id="adminDashActive">0</strong>
+              </div>
+              <div class="stat-card">
+                <span>เช็คเอาท์แล้ว</span>
+                <strong id="adminDashDone">0</strong>
+              </div>
+              <div class="stat-card">
+                <span>ยังไม่เช็คอิน</span>
+                <strong id="adminDashMissing">0</strong>
+              </div>
+            </section>
+
+            <div class="admin-dashboard-grid">
+              <section class="panel">
+                <div class="panel-title">
+                  <div>
+                    <p class="eyebrow">ล่าสุดวันนี้</p>
+                    <h3>รายการเช็คอินล่าสุด</h3>
+                  </div>
+                </div>
+                <div class="record-list compact-record-list" id="adminDashLatestList"></div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-title">
+                  <div>
+                    <p class="eyebrow">ติดตาม</p>
+                    <h3 class="single-line-heading">นักศึกษาที่ยังไม่เช็คอิน</h3>
+                  </div>
+                </div>
+                <div class="missing-list" id="adminDashMissingList"></div>
+              </section>
+            </div>
+          </div>
+
+          <div class="view hidden" id="adminView">
+            <section class="admin-stats">
+              <div class="stat-card">
+                <span>เช็คอินวันนี้</span>
+                <strong id="statCheckedIn">0</strong>
+              </div>
+              <div class="stat-card">
+                <span>รอเช็คเอาท์</span>
+                <strong id="statActive">0</strong>
+              </div>
+              <div class="stat-card">
+                <span>รายการทั้งหมด</span>
+                <strong id="statTotal">0</strong>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title">
+                <div>
+                  <p class="eyebrow">Admin</p>
+                  <h3>ตรวจสอบเวลาฝึกงานนักศึกษา</h3>
+                </div>
+                <div class="admin-filter-bar">
+                  <input class="search-input" id="adminSearch" type="search" placeholder="ค้นหาชื่อนักศึกษา" />
+                  <input class="date-input" id="adminDateFilter" type="date" aria-label="กรองวันที่" />
+                  <div class="status-filter" id="adminStatusFilter" role="group" aria-label="กรองสถานะ" data-status="all">
+                    <button class="active" type="button" data-status="all">สถานะทั้งหมด</button>
+                    <button type="button" data-status="active">กำลังฝึกงาน</button>
+                    <button type="button" data-status="done">เสร็จสิ้น</button>
+                    <button type="button" data-status="missing">รอเช็คอิน</button>
+                  </div>
+                  <button class="secondary-btn compact-button" id="adminClearDateFilter" type="button">ทั้งหมด</button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>นักศึกษา</th>
+                      <th>วันที่</th>
+                      <th>เช็คอิน</th>
+                      <th>เช็คเอาท์</th>
+                      <th>สถานะ</th>
+                      <th>GPS</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminTable"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <div class="view hidden" id="accountView">
+            <section class="panel">
+              <div class="panel-title">
+                <div>
+                  <p class="eyebrow">Admin</p>
+                  <h3 id="accountFormTitle">สร้าง Account ให้นักศึกษา</h3>
+                </div>
+              </div>
+              <form class="account-form" id="accountForm" novalidate>
+                <label>
+                  <span class="field-label">รหัสนักศึกษา <span class="required-mark">*</span></span>
+                  <input id="accountStudentId" type="text" placeholder="เช่น 65010004" required />
+                </label>
+                <label>
+                  <span class="field-label">ชื่อนักศึกษา <span class="required-mark">*</span></span>
+                  <input id="accountStudentName" type="text" placeholder="ชื่อ - นามสกุล" required />
+                </label>
+                <label>
+                  <span class="field-label">สาขา <span class="required-mark">*</span></span>
+                  <input id="accountStudentMajor" type="text" placeholder="สาขาวิชา" required />
+                </label>
+                <label>
+                  <span class="field-label">ระดับการศึกษา <span class="required-mark">*</span></span>
+                  <input id="accountEducationLevel" type="text" placeholder="เช่น ปวช. / ปวส. / ปริญญาตรี" required />
+                </label>
+                <label>
+                  <span class="field-label">เบอร์โทรนักศึกษา <span class="required-mark">*</span></span>
+                  <input id="accountPhone" type="tel" placeholder="เช่น 0801234567" required />
+                </label>
+                <label>
+                  <span class="field-label">ชื่อผู้ปกครอง <span class="required-mark">*</span></span>
+                  <input id="accountGuardianName" type="text" placeholder="ชื่อ - นามสกุล" required />
+                </label>
+                <label>
+                  <span class="field-label">เบอร์โทรผู้ปกครอง <span class="required-mark">*</span></span>
+                  <input id="accountGuardianPhone" type="tel" placeholder="เช่น 0801234567" required />
+                </label>
+                <label>
+                  <span class="field-label">รหัสผ่าน <span class="required-mark">*</span></span>
+                  <input id="accountStudentPassword" type="text" placeholder="กำหนดรหัสผ่าน" required />
+                </label>
+                <label class="account-review-status-field">
+                  สถานะข้อมูล
+                  <select id="accountReviewStatus">
+                    <option value="pending">รอตรวจสอบ</option>
+                    <option value="verified">ตรวจสอบแล้ว</option>
+                    <option value="needs_fix">ต้องแก้ไข</option>
+                  </select>
+                </label>
+                <label>
+                  <span class="field-label">สถานที่ฝึกงาน <span class="required-mark">*</span></span>
+                  <input id="accountWorkplace" type="text" placeholder="ชื่อบริษัท / หน่วยงาน" required />
+                </label>
+                <label class="wide-field">
+                  <span class="field-label">ที่อยู่สถานประกอบการ <span class="required-mark">*</span></span>
+                  <input id="accountWorkplaceAddress" type="text" placeholder="ที่อยู่บริษัท / หน่วยงาน" required />
+                </label>
+                <label>
+                  ชื่อครูฝึก / พี่เลี้ยง
+                  <input id="accountMentorName" type="text" placeholder="ชื่อ - นามสกุล" />
+                </label>
+                <label>
+                  เบอร์โทรครูฝึก / พี่เลี้ยง
+                  <input id="accountMentorPhone" type="tel" placeholder="เช่น 0801234567" />
+                </label>
+                <label class="wide-field">
+                  ที่อยู่ที่พักปัจจุบัน
+                  <input id="accountResidenceAddress" type="text" placeholder="ที่อยู่ที่พักระหว่างฝึกงาน" />
+                </label>
+                <label class="wide-field">
+                  ชื่อเพื่อนร่วมห้อง / คนที่พักด้วย
+                  <input id="accountRoommate" type="text" placeholder="ถ้าไม่มีให้เว้นว่าง" />
+                </label>
+                <fieldset class="schedule-field wide-field">
+                  <legend>วันและเวลาฝึกงาน <span class="required-mark">*</span></legend>
+                  <label class="schedule-option">
+                    <input type="radio" name="accountSchedule" value="mon-fri-0830-1630" data-start="08:30" data-end="16:30" data-label="วันจันทร์ - ศุกร์ เวลา 08.30 - 16.30 น." checked />
+                    <span>วันจันทร์ - ศุกร์ เวลา 08.30 - 16.30 น.</span>
+                  </label>
+                  <label class="schedule-option">
+                    <input type="radio" name="accountSchedule" value="mon-fri-0900-1700" data-start="09:00" data-end="17:00" data-label="วันจันทร์ - ศุกร์ เวลา 09.00 - 17.00 น." />
+                    <span>วันจันทร์ - ศุกร์ เวลา 09.00 - 17.00 น.</span>
+                  </label>
+                  <label class="schedule-option">
+                    <input type="radio" name="accountSchedule" value="mon-sat-0800-1700" data-start="08:00" data-end="17:00" data-label="วันจันทร์ - เสาร์ เวลา 08.00 - 17.00 น." />
+                    <span>วันจันทร์ - เสาร์ เวลา 08.00 - 17.00 น.</span>
+                  </label>
+                  <label class="schedule-option">
+                    <input type="radio" name="accountSchedule" value="sun-thu-sat-1000-1900" data-start="10:00" data-end="19:00" data-label="วันจันทร์ - อาทิตย์ (หยุดทุกวันศุกร์) เวลา 10.00 - 19.00 น." />
+                    <span>วันจันทร์ - อาทิตย์ (หยุดทุกวันศุกร์) เวลา 10.00 - 19.00 น.</span>
+                  </label>
+                  <label class="schedule-option">
+                    <input type="radio" name="accountSchedule" value="fri-off-1000-1900" data-start="10:00" data-end="19:00" data-label="วันจันทร์ - อาทิตย์ (หยุดทุกวันพฤหัสบดี) เวลา 10.00 - 19.00 น." />
+                    <span>วันจันทร์ - อาทิตย์ (หยุดทุกวันพฤหัสบดี) เวลา 10.00 - 19.00 น.</span>
+                  </label>
+                  <label class="schedule-option">
+                    <input type="radio" name="accountSchedule" value="thu-off-1100-2000" data-start="11:00" data-end="20:00" data-label="วันจันทร์ - อาทิตย์ (หยุดทุกวันพฤหัสบดี) เวลา 11.00 - 20.00 น." />
+                    <span>วันจันทร์ - อาทิตย์ (หยุดทุกวันพฤหัสบดี) เวลา 11.00 - 20.00 น.</span>
+                  </label>
+                  <label class="schedule-option">
+                    <input type="radio" name="accountSchedule" value="sat-thu-split" data-start="10:00" data-end="20:00" data-label="วันเสาร์ - พฤหัสบดี เวลา 10.00 - 11.00 น. และ 19.00 - 20.00 น." />
+                    <span>วันเสาร์ - พฤหัสบดี เวลา 10.00 - 11.00 น. และ 19.00 - 20.00 น.</span>
+                  </label>
+                  <label class="schedule-option">
+                    <input id="accountScheduleOther" type="radio" name="accountSchedule" value="custom" />
+                    <span>เวลาอื่นๆ</span>
+                  </label>
+                  <div class="custom-schedule-fields" id="accountCustomScheduleFields">
+                    <label>
+                      <span class="field-label">รายละเอียดเวลาอื่นๆ <span class="required-mark">*</span></span>
+                      <input id="accountCustomSchedule" type="text" placeholder="เช่น วันจันทร์ - ศุกร์ เวลา 13.00 - 21.00 น." />
+                    </label>
+                    <label>
+                      <span class="field-label">เวลาเข้างาน <span class="required-mark">*</span></span>
+                      <input id="accountStartTime" type="time" />
+                    </label>
+                    <label>
+                      <span class="field-label">เวลาเลิกงาน <span class="required-mark">*</span></span>
+                      <input id="accountEndTime" type="time" />
+                    </label>
+                  </div>
+                </fieldset>
+                <label class="wide-field">
+                  <span class="field-label">Google Maps Link หรือพิกัด <span class="required-mark">*</span></span>
+                  <input id="accountMapsLink" type="text" placeholder="วางลิงก์ Google Maps หรือ 13.7563,100.5018" required />
+                </label>
+                <label>
+                  <span class="field-label">รัศมีที่ยอมรับ (เมตร) <span class="required-mark">*</span></span>
+                  <input id="accountRadius" type="number" min="50" step="10" value="200" required />
+                </label>
+                <div class="account-form-actions">
+                  <button class="primary-btn" id="accountSubmitBtn" type="submit">สร้าง account</button>
+                  <button class="secondary-btn hidden" id="accountCancelEditBtn" type="button">ยกเลิกแก้ไข</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title">
+                <div>
+                  <p class="eyebrow">บัญชีนักศึกษา</p>
+                  <h3>จัดการ Account นักศึกษา</h3>
+                  <p class="history-meta" id="accountSummary">นักศึกษาทั้งหมด 0 คน</p>
+                </div>
+                <div class="account-toolbar">
+                  <input class="search-input" id="accountSearch" type="search" placeholder="ค้นหาชื่อ รหัส เบอร์ หรือสถานประกอบการ" />
+                  <select class="date-input" id="accountStatusFilter" aria-label="กรองสถานะข้อมูล">
+                    <option value="all">สถานะทั้งหมด</option>
+                    <option value="incomplete">ข้อมูลไม่ครบ</option>
+                    <option value="pending">รอตรวจสอบ</option>
+                    <option value="verified">ตรวจสอบแล้ว</option>
+                    <option value="needs_fix">ต้องแก้ไข</option>
+                  </select>
+                </div>
+              </div>
+              <div class="account-list" id="studentAccountList"></div>
+              <button class="secondary-btn history-more-btn hidden" id="accountViewMoreBtn" type="button">ดูเพิ่มเติม</button>
+            </section>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div class="mobile-menu-backdrop hidden" id="mobileMenuBackdrop"></div>
+  <nav class="mobile-bottom-dock hidden" id="mobileBottomDock" aria-label="เมนูมือถือ">
+    <div class="mobile-menu-head">
+      <strong>เมนู</strong>
+      <button class="icon-btn" id="mobileMenuClose" type="button" aria-label="ปิดเมนู">×</button>
+    </div>
+    <div class="mobile-nav-row">
+      <button class="nav-item student-only active" type="button" data-view="studentView">
+        <span aria-hidden="true">⌂</span>
+        หน้าหลัก
+      </button>
+      <button class="nav-item student-only" type="button" data-view="studentProfileView">
+        <span aria-hidden="true" class="line-icon">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M20 21a8 8 0 0 0-16 0" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </span>
+        โปรไฟล์
+      </button>
+      <button class="nav-item admin-only" type="button" data-view="adminDashboardView">
+        <span aria-hidden="true">▤</span>
+        Dashboard
+      </button>
+      <button class="nav-item" type="button" data-view="historyView">
+        <span aria-hidden="true">◷</span>
+        ประวัติ
+      </button>
+      <button class="nav-item admin-only" type="button" data-view="adminView">
+        <span aria-hidden="true">▦</span>
+        จัดการข้อมูล
+      </button>
+      <button class="nav-item admin-only" type="button" data-view="accountView">
+        <span aria-hidden="true">☷</span>
+        จัดการ Account
+      </button>
+    </div>
+    <div class="mobile-action-row">
+      <button class="ghost-btn mobile-menu-command" id="mobileLogoutBtn" type="button">ออกจากระบบ</button>
+    </div>
+  </nav>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="modal-overlay hidden" id="appModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <section class="modal-card">
+      <div class="modal-icon" id="modalIcon" aria-hidden="true">!</div>
+      <h3 id="modalTitle">ยืนยัน</h3>
+      <p id="modalMessage">กรุณายืนยันการทำรายการ</p>
+      <div class="modal-actions" id="modalActions">
+        <button class="secondary-btn" id="modalCancelBtn" type="button">ยกเลิก</button>
+        <button class="primary-btn" id="modalConfirmBtn" type="button">ยืนยัน</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="scripts/storage.js?v=20260605-review-status-edit-only"></script>
+  <script src="scripts/ui.js?v=20260605-review-status-edit-only"></script>
+  <script src="scripts/auth.js?v=20260605-review-status-edit-only"></script>
+  <script src="scripts/student.js?v=20260605-review-status-edit-only"></script>
+  <script src="scripts/admin.js?v=20260605-review-status-edit-only"></script>
+  <script src="scripts/profile.js?v=20260605-review-status-edit-only"></script>
+  <script src="scripts/attendance.js?v=20260605-review-status-edit-only"></script>
+  <script src="scripts/export.js?v=20260605-review-status-edit-only"></script>
+  <script src="scripts/bootstrap.js?v=20260605-review-status-edit-only"></script>
+</body>
+
+</html>
